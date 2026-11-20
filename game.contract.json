@@ -1,8 +1,8 @@
 {
-  "contract_version": "1.2",
+  "contract_version": "1.3",
   "team": "2A202603402-do-minh-hieu",
-  "build_cmd": "npm install && npm run build",
-  "run_cmd": "npm run start",
+  "build_cmd": "npm install && npx playwright install chromium && npm run build",
+  "run_cmd": "node serve.mjs",
   "headless_cmd": "node headless.mjs",
   "tuning": {
     "player_speed": 6,
@@ -44,5 +44,7 @@
       "per_second_left": 0,
       "per_flame_left": 50
     }
-  }
+  },
+  "bench_cmd": "node scripts/bench.mjs",
+  "soak_cmd": "node --expose-gc soak.mjs"
 }

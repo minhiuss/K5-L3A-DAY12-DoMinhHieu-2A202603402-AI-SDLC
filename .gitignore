@@ -7,3 +7,4 @@ dist/
 # source art (learner-provided Tripo models); the game ships public/assets/may.glb
 art/source/
 data/
+release/

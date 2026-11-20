@@ -41,9 +41,9 @@ const server = http.createServer((req, res) => {
   return undefined;
 });
 
-const port = Number(arg('port') || process.env.PORT || 5173);
+const port = arg('port') !== undefined ? Number(arg('port')) : Number(process.env.PORT || 5173); // --port 0 = any free port
 server.listen(port, '127.0.0.1', () => {
-  const url = `http://localhost:${port}/`;
+  const url = `http://localhost:${server.address().port}/`;
   process.stdout.write(`Đảo Đèn Lồng: ${url}  (leaderboard: ${path.relative(ROOT, LB_FILE)})\n`);
   if (!process.argv.includes('--no-open')) {
     const cmd = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', url]] : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];

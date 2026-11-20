@@ -7,7 +7,8 @@ import { TUNING } from '../src/tuning.js';
 const contract = JSON.parse(fs.readFileSync(new URL('../game.contract.json', import.meta.url), 'utf8'));
 
 test('R15 contract header fields present', () => {
-  assert.equal(contract.contract_version, '1.2');
+  assert.equal(contract.contract_version, '1.3'); // v1.3 (Ticket-04) adds bench_cmd / soak_cmd; v1.0-v1.2 rules unchanged
+  for (const k of ['bench_cmd', 'soak_cmd']) assert.equal(typeof contract[k], 'string', k);
   for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) assert.equal(typeof contract[k], 'string', k);
   assert.match(contract.team, /^[0-9A-Za-z]+-[a-z-]+$/);
 });
