@@ -1,0 +1,6 @@
+command: node headless.mjs --seed 7 --night 1 --inputs scenarios/walk_forward.json --ticks 18000 --out <file>
+run 1 sha256: 9edbbff20103784dcfa075763e3216c407ed44800359ee8f30584400edbbc7a9
+run 2 sha256: 9edbbff20103784dcfa075763e3216c407ed44800359ee8f30584400edbbc7a9
+identical: true
+bytes: 183083
+wall time run 1 (18000 ticks = 5 min game time): 62 ms

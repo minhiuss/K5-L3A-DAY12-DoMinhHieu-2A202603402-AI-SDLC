@@ -1,0 +1,3 @@
+duplicate tick in inputs: exit 2 · stderr: headless: inputs: frame ticks must be strictly increasing (got 3 after 3)
+scenario is not JSON: exit 2 · stderr: headless: scenario file is not valid JSON: Unexpected token '#', "# Đảo Đèn "... is not valid JSON
+valid run: exit 0

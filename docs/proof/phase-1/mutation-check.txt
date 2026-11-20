@@ -1,0 +1,12 @@
+Mutation check (are the tests able to fail?) — 2026-11-20
+
+Change injected into src/sim.js (then reverted):
+  if (edge.interact && p.carried > 0)   ->   if (input.interact && p.carried > 0)
+  (= "deposit every tick while E is held" instead of "only on false->true")
+
+Before fixing test R5b:  23 pass / 0 fail   <- test was too weak: after the first deposit
+                                                carried = 0, so holding E could not deposit again anyway.
+After fixing test R5b (carried refilled each tick):
+  node --test tests/     -> 22 pass / 1 fail  (✖ R5b interact only triggers on false->true)
+  node scripts/stop-gate.mjs -> exit 2, "Tests are red. Fix them before finishing"
+Mutation reverted        -> 23 pass / 0 fail

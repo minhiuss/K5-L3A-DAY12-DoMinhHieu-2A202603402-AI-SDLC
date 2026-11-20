@@ -1,0 +1,31 @@
+✔ R15 contract header fields present (0.8548ms)
+✔ R15 contract tuning equals src/tuning.js (1.1983ms)
+✔ R12 snapshot at tick 0 and every N ticks, end line last (61.2815ms)
+✔ R12b example inputs file: walk to a mote, event stamped k+1, held fields persist (59.8412ms)
+✔ R6 scripted full win scenario ends early with state won (58.244ms)
+✔ R13 same seed + scenario + inputs -> byte-identical output (189.676ms)
+✔ R14 malformed inputs/scenario files exit 2 with a stderr message (391.5277ms)
+✔ bad command line exits non-zero (100.7329ms)
+✔ R1 move [0,1] at yaw 0 for 60 ticks goes +Z by player_speed (1.5594ms)
+✔ R2 yaw 90 turns move [0,1] into +X; long vectors are normalized (0.3548ms)
+✔ R3 standing on a mote picks it up: carried +1, score +per_mote (0.5601ms)
+✔ R4 a full bag does not pick up more (0.1251ms)
+✔ R5 interact deposits; reaching lantern_cost lights it (+per_lantern) (0.196ms)
+✔ R5b interact only triggers on false->true, holding does nothing more (0.1251ms)
+✔ R6 lighting the last lantern wins with time + flame bonus (0.2962ms)
+✔ R7 shade contact: lose a flame, drop motes, then invulnerable (0.4115ms)
+✔ R8 last flame lost -> lost no_flames; time runs out -> lost dawn (0.2265ms)
+✔ R9 pulse stuns + pushes shades in range, costs light, has cooldown (0.6511ms)
+✔ R9b pulse without enough light does nothing (0.2052ms)
+✔ R10 shades cannot enter a lantern safe_radius (2.0959ms)
+✔ R11 building a scenario emits no events and awards no points (0.3401ms)
+✔ scenario lists replace defaults; unknown lantern id is rejected (0.709ms)
+✔ default night 1 has 5 lanterns, L1 at (0,0,25), seeded motes (0.2844ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 951.8643
