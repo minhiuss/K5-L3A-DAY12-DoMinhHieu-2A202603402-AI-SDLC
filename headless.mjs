@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Headless mode, Test Contract v1.0:
-// node headless.mjs --seed <int> --night 1 [--scenario f.json] [--inputs f.json]
+// Headless mode, Test Contract v1.1:
+// node headless.mjs --seed <int> --night 1|2|3 [--scenario f.json] [--inputs f.json]
 //                   --ticks <int> --out <f.jsonl> [--snapshot-every <int>]
 // Exit 0 ok · 1 bad command line · 2 malformed inputs/scenario file.
 import fs from 'node:fs';
@@ -36,7 +36,7 @@ function parseArgs(argv) {
     else fail(1, `unknown argument: ${a}`);
   }
   for (const k of ['seed', 'night', 'ticks', 'out']) if (out[k] === undefined) fail(1, `--${k} is required`);
-  if (out.night !== 1) fail(1, `night ${out.night} is not available (only night 1)`);
+  if (![1, 2, 3].includes(out.night)) fail(1, `night ${out.night} is not available (1, 2 or 3)`);
   return out;
 }
 
@@ -65,7 +65,7 @@ export function parseInputs(doc) {
     if ('cam_yaw_deg' in f && !(typeof f.cam_yaw_deg === 'number' && Number.isFinite(f.cam_yaw_deg))) {
       throw new InputError(`frame ${f.tick}: cam_yaw_deg must be a number`);
     }
-    for (const b of ['jump', 'interact', 'pulse', 'dash']) {
+    for (const b of ['jump', 'interact', 'pulse', 'dash', 'pause']) {
       if (b in f && typeof f[b] !== 'boolean') throw new InputError(`frame ${f.tick}: ${b} must be boolean`);
     }
     frames.set(f.tick, f);
@@ -84,15 +84,15 @@ function main() {
   }
   let game;
   try {
-    game = createGame(args.seed, args.scenario ? readJson(args.scenario, 'scenario') : {});
+    game = createGame(args.seed, args.scenario ? readJson(args.scenario, 'scenario') : {}, args.night);
   } catch (e) {
     if (e instanceof ScenarioError) fail(2, `scenario: ${e.message}`);
     throw e;
   }
 
-  const lines = [JSON.stringify(snapshot(game))];
-  const held = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false };
-  for (let k = 0; k < args.ticks && game.state === 'playing'; k++) {
+  const lines = [JSON.stringify(snapshot(game)), JSON.stringify({ type: 'event', tick: 0, name: 'night_start', data: { night: args.night } })];
+  const held = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
+  for (let k = 0; k < args.ticks && (game.state === 'playing' || game.state === 'paused'); k++) {
     const f = frames.get(k);
     if (f) for (const key of Object.keys(held)) if (key in f) held[key] = f[key];
     for (const ev of step(game, held)) lines.push(JSON.stringify(ev));
