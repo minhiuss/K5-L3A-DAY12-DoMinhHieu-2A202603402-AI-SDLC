@@ -54,6 +54,7 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 ## Phase 3 (Ticket-03, contract v1.2) — phase 30 phút, nâng cấp tối thiểu
 
 - AI viết ADR-001 + giả định C1–C7 **trước** khi sửa sim; lưu dầu bằng số nguyên 1/60 để giữ tất định.
-- Test cũ đỏ đúng 6 cái, đều là luật bị thay → sửa kèm comment .
-- **Lỗi AI:** (1) test F5 đặt bóng cách đèn 4 m nhưng mong nó  ngay (cần ≤ 2 m); (2) F5b quên luật phát hiện 12 m và luật wander → drain khi đèn yếu ở ≤ 2 m; (3) mutation M3 (biên đúng 30) không bị bắt → thêm test F4b; (4) lời nhắc châm dầu dùng ngưỡng 90 thay vì 100, phát hiện khi đối chiếu với công thức .
+- Test cũ đỏ đúng 6 cái, đều là luật bị thay → sửa kèm comment `REPLACED by Ticket-03`.
+- **Lỗi AI:** (1) test F5 đặt bóng cách đèn 4 m nhưng mong nó `drain` ngay (cần ≤ 2 m); (2) F5b quên luật phát hiện 12 m và luật wander → drain khi đèn yếu ở ≤ 2 m; (3) mutation M3 (biên đúng 30) không bị bắt → thêm test F4b; (4) lời nhắc châm dầu dùng ngưỡng 90 thay vì 100, phát hiện khi đối chiếu với công thức `used`.
+- (5) Lệnh bash có backtick bị shell hiểu sai, làm mất chữ trong nhật ký này (lần 3 trong lab); phát hiện khi đọc lại file, sửa bằng Python.
 - Token ước tính: ~120k vào, ~35k ra.
