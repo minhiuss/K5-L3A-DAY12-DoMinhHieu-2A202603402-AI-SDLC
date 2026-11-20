@@ -20,7 +20,16 @@ npm install       # cài three, vite, playwright
 npm start         # build ra dist/ rồi mở game ở http://localhost:5173 (kèm bảng xếp hạng lưu trên đĩa)
 ```
 
-Bản phát hành (không cần `npm install`): tải `dao-den-long-v1.0.0-web.zip` ở Release, giải nén, chạy `node serve.mjs`.
+### Mở game trên web từ bản phát hành (không cần `npm install`)
+
+1. Tải `dao-den-long-v1.0.0-web.zip` ở [Release v1.0.0](../../releases/tag/v1.0.0) rồi giải nén.
+2. Mở terminal trong thư mục vừa giải nén, chạy `node serve.mjs` (cần Node.js ≥ 18).
+3. Trình duyệt tự mở `http://localhost:5173`. Nếu không tự mở, dán địa chỉ đó vào Chrome/Edge/Firefox/Safari. Đổi cổng: `node serve.mjs --port 8080`.
+4. Bấm vào màn chơi để khoá chuột. Bảng xếp hạng lưu ở `data/leaderboard.json` cạnh `serve.mjs`.
+
+Lưu ý:
+- **Không mở `dist/index.html` bằng double-click:** trình duyệt chặn tải module và model qua `file://`.
+- Thư mục `dist/` cũng chạy được trên bất kỳ host web tĩnh nào (GitHub Pages, Netlify, `npx serve dist`), vì đường dẫn trong bản build là tương đối. Khi đó bảng xếp hạng lưu trong trình duyệt (`localStorage`) thay vì file trên đĩa.
 
 ## Điều khiển (đổi được trong Cài đặt)
 
