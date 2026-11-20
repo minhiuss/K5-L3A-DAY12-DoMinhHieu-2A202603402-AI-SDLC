@@ -1,4 +1,4 @@
-// Contract tests for headless.mjs: output shape, tick model, determinism, exit codes.
+// Contract tests for headless.mjs (Test Contract v1.1): output shape, tick model, determinism, exit codes.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -30,8 +30,14 @@ test('R12 snapshot at tick 0 and every N ticks, end line last', () => {
   assert.deepEqual(snaps, [0, 10, 20]);
   assert.deepEqual(r.lines.at(-1), { type: 'end', ticks: 25, state: 'playing', score: 0 });
   const s0 = r.lines[0];
-  assert.deepEqual(s0.player, { pos: [0, 0, 0], flames: 3, carried: 0 });
+  // v1.1 player fields (Phase 1 checked only pos/flames/carried)
+  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: 3, carried: 0, invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0 });
   assert.equal(s0.time_left_s, 300);
+  assert.equal(s0.night, 1);
+  assert.deepEqual(s0.wind, { active: false, dir_deg: null });
+  for (const k of ['motes', 'drifters', 'charms', 'shades', 'lanterns']) assert.ok(Array.isArray(s0[k]), k);
+  assert.deepEqual(Object.keys(s0.motes[0]), ['id', 'pos', 'kind', 'ttl_s']);
+  assert.deepEqual(r.lines[1], { type: 'event', tick: 0, name: 'night_start', data: { night: 1 } });
 });
 
 test('R12b example inputs file: walk to a mote, event stamped k+1, held fields persist', () => {
@@ -75,6 +81,8 @@ test('R14 malformed inputs/scenario files exit 2 with a stderr message', () => {
     ['--scenario', write('lan.json', { lanterns: [{ id: 'L7' }] })],
     ['--scenario', write('arr.json', [1, 2])],
     ['--scenario', path.join(TMP, 'missing.json')],
+    ['--scenario', write('state.json', { shades: [{ pos: [1, 1, 1], state: 'sleeping' }] })],
+    ['--inputs', write('dash.json', { frames: [{ tick: 0, dash: 'yes' }] })],
   ];
   for (const extra of cases) {
     const r = headless(['--seed', '1', '--night', '1', '--ticks', '10', ...extra]);
@@ -85,5 +93,35 @@ test('R14 malformed inputs/scenario files exit 2 with a stderr message', () => {
 
 test('bad command line exits non-zero', () => {
   assert.equal(headless(['--night', '1', '--ticks', '10']).code, 1);
-  assert.equal(headless(['--seed', '1', '--night', '2', '--ticks', '10']).code, 1);
+  assert.equal(headless(['--seed', '1', '--night', '4', '--ticks', '10']).code, 1);
+});
+
+test('P12 nights 2 and 3 run headless with v1.1 snapshots', () => {
+  for (const night of ['2', '3']) {
+    const r = headless(['--seed', '9', '--night', night, '--ticks', '1300', '--snapshot-every', '100']);
+    assert.equal(r.code, 0, r.stderr);
+    const s = r.lines.filter((l) => l.type === 'snapshot').at(-1);
+    assert.equal(s.night, Number(night));
+    assert.ok(s.drifters.length >= 1, 'a drifter spawned at tick 1200');
+    assert.ok(s.charms.length >= 1);
+  }
+});
+
+test('P8 headless pause: tick keeps counting, sim_tick stops, state paused', () => {
+  const r = headless(['--seed', '1', '--night', '1', '--ticks', '30', '--inputs', write('pause.json', { frames: [{ tick: 10, pause: true }, { tick: 11, pause: false }] })]);
+  const s = r.lines.filter((l) => l.type === 'snapshot').at(-1);
+  assert.equal(s.tick, 30);
+  assert.equal(s.sim_tick, 10);
+  assert.equal(s.state, 'paused');
+  assert.equal(r.lines.at(-1).state, 'paused');
+});
+
+test('P13 a full night (21600 ticks) runs in <= 30 s', () => {
+  for (const night of ['1', '2', '3']) {
+    const t0 = performance.now();
+    const r = headless(['--seed', '3', '--night', night, '--ticks', '21600', '--snapshot-every', '1']);
+    const ms = performance.now() - t0;
+    assert.equal(r.code, 0);
+    assert.ok(ms < 30000, `night ${night} took ${ms} ms`);
+  }
 });

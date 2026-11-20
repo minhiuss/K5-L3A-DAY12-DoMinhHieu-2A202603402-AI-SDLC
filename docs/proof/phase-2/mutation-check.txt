@@ -1,0 +1,9 @@
+Mutation check, Phase 2 rules — 2026-11-20 (break one rule, test must go red, revert)
+
+M1 pulse fires with any carried (> 0) instead of >= 3
+   -> ✖ R9b pulse without 3 fireflies does nothing
+M2 drifter touch radius 1.2 -> 6.2
+   first try: NOT caught (all green). Test P6 only checked "a steal happens", not when.
+   fix: P6 now also asserts the steal tick (42 = ceil((6 - 1.2) / (7/60))).
+   second try -> ✖ P6 Gió Lạc: idle -> chase (>=5 carried, <=15 m) -> steals min(3,n) -> flee 240 ticks -> removed (1.6055ms);
+After revert: all green ( pass 45)

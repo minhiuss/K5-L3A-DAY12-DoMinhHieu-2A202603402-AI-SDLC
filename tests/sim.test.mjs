@@ -1,15 +1,16 @@
-// Rule tests for src/sim.js. IDs (R1...) map to docs/notes/phase-1.md §4.
+// Phase 1 rule tests, updated to the Ticket-02 standard numbers.
+// Every change vs Phase 1 is listed in docs/notes/phase-2.md §1 with its reason.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGame, step, snapshot, ScenarioError } from '../src/sim.js';
-import { TUNING as T } from '../src/tuning.js';
+import { TUNING as T, RULES as R } from '../src/tuning.js';
 
-const IDLE = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false };
-const quiet = (extra = {}) => ({ random_motes: false, random_shades: false, motes: [], shades: [], ...extra });
+const IDLE = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
+const quiet = (extra = {}) => ({ random_motes: false, random_shades: false, random_drifters: false, motes: [], shades: [], ...extra });
 
 function run(g, n, input = IDLE) {
   const ev = [];
-  for (let i = 0; i < n && g.state === 'playing'; i++) ev.push(...step(g, input));
+  for (let i = 0; i < n && (g.state === 'playing' || g.state === 'paused'); i++) ev.push(...step(g, input));
   return ev;
 }
 const press = (g, button) => [...step(g, { ...IDLE, [button]: true }), ...step(g, IDLE)];
@@ -30,27 +31,34 @@ test('R2 yaw 90 turns move [0,1] into +X; long vectors are normalized', () => {
   assert.ok(Math.abs(Math.hypot(h.player.pos[0], h.player.pos[2]) - T.player_speed) < 1e-9);
 });
 
-test('R3 standing on a mote picks it up: carried +1, score +per_mote', () => {
+test('R3 standing on a mote picks it up: carried +1 (v1.1: no points until deposit)', () => {
   const g = createGame(1, quiet({ motes: [[0, 0, T.pickup_radius]] }));
   const ev = run(g, 1);
   assert.deepEqual(ev.map((e) => e.name), ['mote_picked']);
   assert.equal(ev[0].tick, 1);
   assert.deepEqual(ev[0].data, { carried: 1 });
-  assert.equal(g.score, T.score.per_mote);
+  assert.equal(g.score, 0);
 });
 
-test('R4 a full bag does not pick up more', () => {
+test('R3b pickup needs height difference <= 1.5 m', () => {
+  const g = createGame(1, quiet({ motes: [[0, 1.6, 0.5]] }));
+  assert.equal(run(g, 1).length, 0);
+  const h = createGame(1, quiet({ motes: [[0, 1.5, 0.5]] }));
+  assert.equal(run(h, 1).length, 1);
+});
+
+test('R4 a full bag (10) does not pick up more', () => {
   const g = createGame(1, quiet({ player: { carried: T.carry_capacity }, motes: [[0, 0, 0]] }));
   assert.equal(run(g, 1).length, 0);
   assert.equal(g.motes.length, 1);
 });
 
-test('R5 interact deposits; reaching lantern_cost lights it (+per_lantern)', () => {
+test('R5 interact deposits (+10 each); reaching 10 lights it (+100)', () => {
   const g = createGame(1, quiet({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 2] }] }));
   const ev = press(g, 'interact');
   assert.deepEqual(ev.map((e) => e.name), ['deposit', 'lantern_lit']);
   assert.deepEqual(ev[0].data, { lantern_id: 'L1', amount: T.lantern_cost, deposited: T.lantern_cost });
-  assert.equal(g.score, T.score.per_lantern);
+  assert.equal(g.score, T.score.per_mote * T.lantern_cost + T.score.per_lantern);
   assert.equal(g.player.carried, 0);
 });
 
@@ -65,23 +73,36 @@ test('R5b interact only triggers on false->true, holding does nothing more', () 
   assert.equal(deposits, 1);
 });
 
-test('R6 lighting the last lantern wins with time + flame bonus', () => {
+test('R5c lantern remembers progress; ties go to the smaller id', () => {
+  const g = createGame(1, quiet({ player: { carried: 4 }, lanterns: [{ id: 'L2', pos: [1, 0, 0] }, { id: 'L1', pos: [-1, 0, 0] }] }));
+  const ev = press(g, 'interact');
+  assert.equal(ev[0].data.lantern_id, 'L1');
+  g.player.carried = 3;
+  press(g, 'interact');
+  assert.equal(g.lanterns[0].deposited, 7);
+});
+
+test('R6 lighting the last lantern wins with 2 x seconds left + 50 x flames', () => {
   const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
   const g = createGame(1, quiet({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 1] }, ...lit], time_left_s: 100 }));
   const ev = step(g, { ...IDLE, interact: true });
   assert.equal(g.state, 'won');
   assert.deepEqual(ev.at(-1).data, { result: 'won', reason: 'all_lit' });
   const bonus = T.score.per_second_left * Math.floor(100 - 1 / 60) + T.score.per_flame_left * T.flames;
-  assert.equal(g.score, T.score.per_lantern + bonus);
+  assert.equal(g.score, T.score.per_mote * T.lantern_cost + T.score.per_lantern + bonus);
 });
 
-test('R7 shade contact: lose a flame, drop motes, then invulnerable', () => {
-  const g = createGame(1, quiet({ player: { carried: 4 }, shades: [{ pos: [0, 1, 0.5] }] }));
+test('R7 shade contact: -1 flame, drop floor(n/2) into a 1.5-2.5 m ring, invulnerable 90 ticks', () => {
+  const g = createGame(1, quiet({ player: { carried: 5 }, shades: [{ pos: [0, 1, 0.5] }] }));
   const ev = run(g, 1);
-  assert.deepEqual(ev[0].data, { by: 'shade', flames: T.flames - 1, dropped: Math.floor(4 * T.hit_drop_ratio) });
-  const later = run(g, Math.round(T.invuln_s * 60) - 1);
-  assert.equal(later.filter((e) => e.name === 'player_hit').length, 0);
-  assert.equal(run(g, 1).filter((e) => e.name === 'player_hit').length, 1);
+  assert.deepEqual(ev[0].data, { by: 'shade', flames: T.flames - 1, dropped: 2 });
+  const dropped = g.motes.filter((m) => m.kind === 'dropped');
+  assert.equal(dropped.length, 2);
+  for (const m of dropped) {
+    const r = Math.hypot(m.pos[0] - g.player.pos[0], m.pos[2] - g.player.pos[2]);
+    assert.ok(r >= 1.5 - 1e-9 && r <= 2.5 + 1e-9, `ring radius ${r}`);
+  }
+  assert.equal(g.player.invuln, 90);
 });
 
 test('R8 last flame lost -> lost no_flames; time runs out -> lost dawn', () => {
@@ -95,32 +116,34 @@ test('R8 last flame lost -> lost no_flames; time runs out -> lost dawn', () => {
   assert.deepEqual(ev2.at(-1).data, { result: 'lost', reason: 'dawn' });
 });
 
-test('R9 pulse stuns + pushes shades in range, costs light, has cooldown', () => {
-  const g = createGame(1, quiet({ player: { carried: 3 }, shades: [{ id: 'A', pos: [3, 1, 0] }, { id: 'B', pos: [20, 1, 0] }] }));
+test('R9 pulse: costs 3, 3D radius 5 from feet+0.8, stun 120, push 4 m over 15 ticks, cooldown 3 s, +5 each', () => {
+  const g = createGame(1, quiet({ player: { carried: 5 }, shades: [{ id: 'A', pos: [3, 1, 0] }, { id: 'B', pos: [5.1, 1, 0] }] }));
   const ev = step(g, { ...IDLE, pulse: true });
-  assert.deepEqual(ev[0].data, { stunned_ids: ['A'] });
-  assert.equal(g.player.carried, 3 - T.pulse_cost);
-  assert.equal(g.shades[0].state, 'stunned');
-  assert.ok(Math.abs(g.shades[0].pos[0] - (3 + T.pulse_push_m)) < 1e-9);
+  assert.deepEqual(ev.find((e) => e.name === 'pulse').data, { stunned_ids: ['A'] });
+  assert.equal(g.player.carried, 5 - T.pulse_cost);
   assert.equal(g.score, T.score.per_stun);
+  assert.equal(g.shades[0].state, 'stunned');
+  run(g, 14);
+  assert.ok(Math.abs(g.shades[0].pos[0] - (3 + T.pulse_push_m)) < 1e-9);
   step(g, IDLE);
-  assert.equal(step(g, { ...IDLE, pulse: true }).length, 0, 'cooldown blocks a second pulse');
-  const stunTicks = Math.round(T.pulse_stun_s * 60);
-  run(g, stunTicks);
-  assert.equal(g.shades[0].state, 'chase');
+  assert.equal(step(g, { ...IDLE, pulse: true }).filter((e) => e.name === 'pulse').length, 0, 'cooldown blocks a second pulse');
+  run(g, 120);
+  assert.notEqual(g.shades[0].state, 'stunned');
 });
 
-test('R9b pulse without enough light does nothing', () => {
-  const g = createGame(1, quiet({ shades: [{ pos: [3, 1, 0] }] }));
-  assert.equal(step(g, { ...IDLE, pulse: true }).length, 0);
+test('R9b pulse without 3 fireflies does nothing', () => {
+  const g = createGame(1, quiet({ player: { carried: 2 }, shades: [{ pos: [3, 1, 0] }] }));
+  assert.equal(step(g, { ...IDLE, pulse: true }).filter((e) => e.name === 'pulse').length, 0);
 });
 
-test('R10 shades cannot enter a lantern safe_radius', () => {
-  const g = createGame(1, quiet({ player: { pos: [0, 0, 25] }, shades: [{ pos: [0, 1, 10] }] }));
+test('R10 shades cannot enter the safe radius of a LIT lantern (unlit lanterns do not protect)', () => {
+  const g = createGame(1, quiet({ player: { pos: [0, 0, 25] }, lanterns: [{ id: 'L1', lit: true }], shades: [{ pos: [0, 1, 14] }] }));
   run(g, 600);
-  const s = g.shades[0];
-  assert.ok(Math.hypot(s.pos[0], s.pos[2] - 25) >= T.safe_radius - 1e-9);
+  assert.ok(Math.hypot(g.shades[0].pos[0], g.shades[0].pos[2] - 25) >= T.safe_radius - 1e-9);
   assert.equal(g.player.flames, T.flames);
+  const u = createGame(1, quiet({ player: { pos: [0, 0, 25] }, shades: [{ pos: [0, 1, 14] }] }));
+  run(u, 600);
+  assert.ok(u.player.flames < T.flames, 'unlit lantern gives no protection');
 });
 
 test('R11 building a scenario emits no events and awards no points', () => {
@@ -136,14 +159,19 @@ test('scenario lists replace defaults; unknown lantern id is rejected', () => {
   assert.equal(g.shades.length, 0);
   assert.throws(() => createGame(1, { lanterns: [{ id: 'L9' }] }), ScenarioError);
   assert.throws(() => createGame(1, { player: { pos: [0, 0] } }), ScenarioError);
+  assert.throws(() => createGame(1, { shades: [{ pos: [1, 1, 1], state: 'angry' }] }), ScenarioError);
 });
 
-test('default night 1 has 5 lanterns, L1 at (0,0,25), seeded motes', () => {
+test('default night 1: standard lanterns, 20 seeded motes on 20 different spawn points', () => {
   const a = snapshot(createGame(7));
   const b = snapshot(createGame(7));
-  const c = snapshot(createGame(8));
   assert.equal(a.lanterns.length, T.lantern_count_night1);
-  assert.deepEqual(a.lanterns[0].pos, [0, 0, 25]);
+  assert.deepEqual(a.lanterns.map((l) => l.pos), [[0, 0, 25], [23.8, 0, 7.7], [14.7, 0, -20.2], [-14.7, 0, -20.2], [-23.8, 0, 7.7]]);
+  assert.equal(a.motes.length, R.mote_start);
+  assert.equal(new Set(a.motes.map((m) => m.pos.join())).size, R.mote_start);
   assert.deepEqual(a.motes, b.motes);
-  assert.notDeepEqual(a.motes, c.motes);
+  for (const m of a.motes) {
+    const r = Math.hypot(m.pos[0], m.pos[2]);
+    assert.ok(Math.abs(r - 12) < 1e-3 || Math.abs(r - 33) < 1e-3);
+  }
 });
