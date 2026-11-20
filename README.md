@@ -2,7 +2,7 @@
 
 > **Video demo:** _(thêm ở Phase 4 — link Release `v1.0.0`)_
 
-Game 3D góc nhìn thứ ba (Three.js). Mây, người giữ đèn nhỏ tuổi, đi qua **3 Đêm** (Đảo Bến, Đảo Cau, Đảo Chuông), gom đom đóm để thắp lại các Đèn Lồng Lớn trước bình minh, né Bóng Mực và Gió Lạc. Có chế độ **headless** theo **Test Contract v1.1** để chấm tự động.
+Game 3D góc nhìn thứ ba (Three.js). Mây, người giữ đèn nhỏ tuổi, đi qua **3 Đêm** (Đảo Bến, Đảo Cau, Đảo Chuông), gom đom đóm để thắp lại các Đèn Lồng Lớn trước bình minh, né Bóng Mực và Gió Lạc. Có chế độ **headless** theo **Test Contract v1.2** để chấm tự động. **Phase 3:** đèn hao dầu và có thể tắt; thắng khi sống tới bình minh với ≥ 60% đèn đang sáng (xem [CHANGELOG](CHANGELOG.md), [ADR-001](docs/adr/ADR-001-lantern-fuel-and-dawn-win.md)).
 
 Lab: Day 12 AI SDLC (tài liệu gốc của lab ở [`docs/lab/`](docs/lab/README.md)).
 
@@ -33,7 +33,7 @@ Bản build tĩnh: `npm run build` → thư mục `dist/` (mở bằng `npm run 
 
 Tuỳ chọn URL: `?night=1|2|3` (vào thẳng Đêm đó) · `?seed=N` (cố định thế giới) · `?q=low` (tắt bloom, cho máy yếu) · `?bench=1` (camera bay vòng 10 s và đo khung hình). Kết quả đo: [`docs/proof/visual.md`](docs/proof/visual.md).
 
-## Luật chơi và điểm (số chuẩn Ticket-02)
+## Luật chơi và điểm (Ticket-02; phần đèn, thắng và điểm đã thay bởi Ticket-03, xem CHANGELOG)
 
 - Đom đóm tự nhặt khi cách ≤ 1 m (chênh cao ≤ 1.5 m), mang tối đa 10. Mỗi đèn cần 10, nạp nhiều lần được.
 - Bóng Mực xuất hiện từ giây 5 (2 con), sau đó định kỳ; đuổi khi cách ≤ 12 m. Chạm: −1 Ngọn Lửa, rơi một nửa đom đóm ra quanh Mây (nhặt lại trong 8 s), bất tử 1.5 s. Đèn đã sáng tạo vùng an toàn 6 m.

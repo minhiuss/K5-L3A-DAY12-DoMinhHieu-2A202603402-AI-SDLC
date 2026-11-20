@@ -50,3 +50,10 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 ### Token / chi phí (ước tính)
 
 - Phase 2: ~250k token vào, ~70k token ra (ticket dài, viết lại sim khoảng 600 dòng, test khoảng 450 dòng, view khoảng 900 dòng). Tiết kiệm: viết giả định + AC trước để code một lần; kiểm trình duyệt bằng `__advance` và ảnh nhỏ thay vì chơi tay qua nhiều ảnh; đo FPS bằng script thay vì quay màn hình.
+
+## Phase 3 (Ticket-03, contract v1.2) — phase 30 phút, nâng cấp tối thiểu
+
+- AI viết ADR-001 + giả định C1–C7 **trước** khi sửa sim; lưu dầu bằng số nguyên 1/60 để giữ tất định.
+- Test cũ đỏ đúng 6 cái, đều là luật bị thay → sửa kèm comment .
+- **Lỗi AI:** (1) test F5 đặt bóng cách đèn 4 m nhưng mong nó  ngay (cần ≤ 2 m); (2) F5b quên luật phát hiện 12 m và luật wander → drain khi đèn yếu ở ≤ 2 m; (3) mutation M3 (biên đúng 30) không bị bắt → thêm test F4b; (4) lời nhắc châm dầu dùng ngưỡng 90 thay vì 100, phát hiện khi đối chiếu với công thức .
+- Token ước tính: ~120k vào, ~35k ra.

@@ -1,6 +1,6 @@
 # AGENTS.md — Đảo Đèn Lồng
 
-3D game (Three.js + Vite), 3 nights, with a headless mode that follows **Test Contract v1.1** (spec: `docs/lab/ticket-02.md`; assumptions in `docs/notes/phase-N.md`).
+3D game (Three.js + Vite), 3 nights, with a headless mode that follows **Test Contract v1.2** (specs: `docs/lab/ticket-0N.md`; design decisions: `docs/adr/`; breaking changes: `CHANGELOG.md`; assumptions in `docs/notes/phase-N.md`).
 
 ## Commands
 - Install: `npm install` · Windowed dev: `npm run dev` · Build: `npm run build`
