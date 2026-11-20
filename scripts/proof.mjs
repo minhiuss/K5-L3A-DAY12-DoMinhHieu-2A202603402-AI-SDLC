@@ -24,6 +24,8 @@ const runs = [
   ['run-default-seed42.jsonl', ['--seed', '42', '--night', '1', '--ticks', '3600', '--snapshot-every', '600']],
   ['run-pickup.jsonl', ['--seed', '1', '--night', '1', '--scenario', 'scenarios/pickup.json', '--inputs', 'scenarios/walk_forward.json', '--ticks', '60']],
   ['run-win.jsonl', ['--seed', '1', '--night', '1', '--scenario', 'scenarios/win_one_left.json', '--inputs', 'scenarios/interact_once.json', '--ticks', '600']],
+  ['run-night2-seed42.jsonl', ['--seed', '42', '--night', '2', '--ticks', '3600', '--snapshot-every', '600']],
+  ['run-night3-seed42.jsonl', ['--seed', '42', '--night', '3', '--ticks', '3600', '--snapshot-every', '600']],
 ];
 for (const [name, args] of runs) {
   const r = node(['headless.mjs', ...args, '--out', path.join(dir, name)]);
@@ -32,7 +34,7 @@ for (const [name, args] of runs) {
 
 // 3. determinism: same args twice -> same bytes
 const a = path.join(os.tmpdir(), 'ddl-a.jsonl'), b = path.join(os.tmpdir(), 'ddl-b.jsonl');
-const dargs = ['headless.mjs', '--seed', '7', '--night', '1', '--inputs', 'scenarios/walk_forward.json', '--ticks', '18000'];
+const dargs = ['headless.mjs', '--seed', '7', '--night', phase === '1' ? '1' : '3', '--inputs', 'scenarios/walk_forward.json', '--ticks', '21600', '--snapshot-every', '1'];
 const t0 = performance.now();
 node([...dargs, '--out', a]);
 const ms = performance.now() - t0;
@@ -40,7 +42,7 @@ node([...dargs, '--out', b]);
 const [ha, hb] = [sha(a), sha(b)];
 fs.writeFileSync(path.join(dir, 'determinism.txt'),
   `command: node ${dargs.join(' ')} --out <file>\nrun 1 sha256: ${ha}\nrun 2 sha256: ${hb}\nidentical: ${ha === hb}\n` +
-  `bytes: ${fs.statSync(a).size}\nwall time run 1 (18000 ticks = 5 min game time): ${ms.toFixed(0)} ms\n`);
+  `bytes: ${fs.statSync(a).size}\nwall time run 1 (up to 21600 ticks, snapshot every tick; limit 30 s): ${ms.toFixed(0)} ms\n`);
 console.log(`determinism identical: ${ha === hb}`);
 
 // 4. exit codes for malformed files

@@ -11,5 +11,6 @@ description: Run the full verification for the current phase and save evidence i
    - `run-*.jsonl` (sample headless outputs from `scenarios/`)
    - `machine.txt` (OS, CPU, Node version)
 3. For things only visible in the window (HUD, lighting, win/lose screens): run `npm run dev`, take screenshots, save as `docs/proof/phase-<N>/NN-what.jpg`.
-4. Update the evidence table in `docs/proof/phase-<N>.md`: requirement | how checked | evidence file | result. Write "chưa đạt" + reason for anything failing.
-5. Before tagging, do a quick mutation check: break one rule in `src/sim.js` on purpose, confirm `npm test` goes red, revert. Note it in `mutation-check.txt`.
+4. FPS (DoD ≥ 30 at 1280×720): in the browser pane, `resize_window` 1280×720, open `?night=N&bench=1`, run `__benchSync(300)` for each night, record mean/p95/draw calls/GPU.
+5. Update the evidence table in `docs/proof/phase-<N>.md`: requirement | how checked | evidence file | result. Write "chưa đạt" + reason for anything failing.
+6. Before tagging, do a quick mutation check: break one rule in `src/sim.js` on purpose, confirm `npm test` goes red, revert. Note it in `mutation-check.txt`.
