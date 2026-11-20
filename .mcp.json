@@ -6,6 +6,13 @@
       "headers": {
         "Authorization": "ApiKey ${LUDO_API_KEY}"
       }
+    },
+    "tripo": {
+      "command": "uvx",
+      "args": ["tripo-mcp"],
+      "env": {
+        "TRIPO_API_KEY": "${TRIPO_API_KEY}"
+      }
     }
   }
 }
