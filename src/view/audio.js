@@ -99,6 +99,7 @@ export function makeAudio() {
     steal: () => tone(700, 0.4, { type: 'triangle', gain: 0.1, slide: 300 }),
     wind: () => noise(1.8, { gain: 0.12, freq: 500, sweep: 1500, q: 0.4 }),
     ui: () => tone(740, 0.06, { type: 'triangle', gain: 0.05 }),
+    arrow: () => { tone(220, 0.12, { type: 'triangle', gain: 0.12, slide: 140 }); noise(0.25, { gain: 0.12, freq: 3000, sweep: 6000, q: 1.5, delay: 0.02 }); },
   };
 
   return {
