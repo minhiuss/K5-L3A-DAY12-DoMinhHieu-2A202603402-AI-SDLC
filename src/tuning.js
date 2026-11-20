@@ -93,4 +93,14 @@ export const RULES = {
   drain_reach: 2,            // wander -> drain within 2 m of a weak lantern
   drain_break: 6,            // drain -> chase if Mây is within 6 m
   drain_event_every: 60,
+  // Ticket-04 (v1.3) bench scene
+  bench_shades: 200,
+  bench_motes: 100,
+  // creative mode only (window, never headless/bench): ADR-002
+  arrow_range: 25,
+  arrow_width: 1.0,
+  arrow_stun: 60,
+  arrow_cooldown: 60,
+  sprint_after: 90,
+  sprint_mult: 1.25,
 };

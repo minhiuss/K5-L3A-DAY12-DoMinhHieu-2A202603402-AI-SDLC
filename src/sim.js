@@ -7,7 +7,7 @@ import { MAPS, nightDuration, supportAt, wallAt, topAt } from './maps.js';
 
 export const TICK_HZ = 60;
 const DT = 1 / TICK_HZ;
-const BUTTONS = ['jump', 'interact', 'pulse', 'dash', 'pause'];
+const BUTTONS = ['jump', 'interact', 'pulse', 'dash', 'pause', 'arrow']; // 'arrow' only acts in creative mode
 const SHADE_STATES = ['spawning', 'wander', 'chase', 'recoil', 'stunned', 'drain'];
 const DRIFTER_STATES = ['idle', 'chase', 'flee', 'removed'];
 
@@ -51,7 +51,8 @@ const lightCost = (l) => (l.everLit ? T.relight_cost : T.lantern_cost);
 export const capacityOf = (p) => Math.min(T.capacity_max, R.capacity_base + R.capacity_per_light * p.lights);
 
 // ---------- build ----------
-export function createGame(seed = 0, scenario = {}, night = 1) {
+// opts.creative: window-only extras (arrow skill, innate sprint). Headless never sets it (ADR-002).
+export function createGame(seed = 0, scenario = {}, night = 1, opts = {}) {
   need(isObj(scenario), 'scenario must be a JSON object');
   const map = MAPS[night];
   need(map, `unknown night ${night}`);
@@ -60,13 +61,13 @@ export function createGame(seed = 0, scenario = {}, night = 1) {
     need(!(k in scenario) || typeof scenario[k] === 'boolean', `${k} must be boolean`);
   }
   const g = {
-    night, map, rng,
+    night, map, rng, creative: !!opts.creative, bench: false,
     tick: 0, simTick: 0, state: 'playing', score: 0,
     startTime: nightDuration(T, night),
     player: {
       pos: [...map.start], vy: 0, vel: [0, 0, 0], grounded: true, facing: [0, 1],
       carried: 0, flames: T.flames, invuln: 0, dashCd: 0, pulseCd: 0, charm: 0,
-      dash: 0, dashDir: [0, 1], launch: null, wait: 0, lights: 0,
+      dash: 0, dashDir: [0, 1], launch: null, wait: 0, lights: 0, arrowCd: 0, runTicks: 0,
     },
     lanterns: map.lanterns.map((l) => ({ id: l.id, pos: [...l.pos], lit: false, deposited: 0, fuel: 0, everLit: false, relitCount: 0 })),
     motes: [], nextMote: 1,
@@ -247,7 +248,7 @@ export function step(g, input) {
 
   // 2. counters: time, cooldowns, invuln, stun/states, charm, dropped TTL, charm respawn, wind
   g.simTick++;
-  for (const k of ['invuln', 'dashCd', 'pulseCd', 'charm']) if (p[k] > 0) p[k]--;
+  for (const k of ['invuln', 'dashCd', 'pulseCd', 'charm', 'arrowCd']) if (p[k] > 0) p[k]--;
   if (p.charm > 0) p.dashCd = 0;
   if (p.wait > 0) {
     p.wait--;
@@ -268,7 +269,7 @@ export function step(g, input) {
   }
   // v1.2 fuel: lit lanterns burn 1/tick, each draining shade takes 5/tick more (all in 1/60 units)
   for (const l of g.lanterns) {
-    if (!l.lit) continue;
+    if (!l.lit || g.bench) continue; // v1.3 bench scene: no fuel burn
     const drainers = g.shades.filter((sh) => sh.state === 'drain' && sh.targetId === l.id);
     l.fuel -= T.fuel_decay_per_s + T.drain_per_s * drainers.length;
     for (const sh of drainers) {
@@ -299,8 +300,8 @@ export function step(g, input) {
   // 3. move Mây (jump, dash, jump pads, wind) then fall check
   if (p.wait === 0) movePlayer(g, input, edge, emit);
 
-  // 4. pick up motes and charms
-  if (p.wait === 0) {
+  // 4. pick up motes and charms (off in the v1.3 bench scene)
+  if (p.wait === 0 && !g.bench) {
     for (let i = 0; i < g.motes.length && p.carried < capacityOf(p); ) {
       const m = g.motes[i];
       if (distXZ(p.pos, m.pos) <= T.pickup_radius && Math.abs(p.pos[1] - m.pos[1]) <= R.height_tolerance) {
@@ -323,7 +324,7 @@ export function step(g, input) {
   // 5. lanterns: only lanterns that can take fireflies (unlit, or lit and not full);
   //    nearest, ties -> smaller id. Lit -> refuel (v1.2), unlit -> light / relight.
   const refuelUse = (l) => Math.min(p.carried, Math.ceil((FUEL_MAX - l.fuel) / FUEL_PER_MOTE));
-  if (edge.interact && p.carried > 0 && p.wait === 0) {
+  if (edge.interact && p.carried > 0 && p.wait === 0 && !g.bench) {
     let best = null, bestD = Infinity;
     for (const l of g.lanterns) {
       const d = distXZ(p.pos, l.pos);
@@ -395,6 +396,22 @@ export function step(g, input) {
         emit('drifter_drop', { drifter_id: d.id, amount });
       }
     }
+  }
+
+  // 7b. creative mode only: arrow skill (Q) stuns the first shade along the camera direction
+  if (g.creative && edge.arrow && p.arrowCd === 0 && p.wait === 0) {
+    const th = ((input.cam_yaw_deg ?? 0) * Math.PI) / 180;
+    const dir = [Math.sin(th), Math.cos(th)];
+    let hit = null, bestT = Infinity;
+    for (const sh of g.shades) {
+      const vx = sh.pos[0] - p.pos[0], vz = sh.pos[2] - p.pos[2];
+      const along = vx * dir[0] + vz * dir[1];
+      const perp = Math.abs(vx * dir[1] - vz * dir[0]);
+      if (along > 0 && along <= R.arrow_range && perp <= R.arrow_width && Math.abs(sh.pos[1] - p.pos[1] - 1) <= 2.5 && along < bestT) { hit = sh; bestT = along; }
+    }
+    p.arrowCd = R.arrow_cooldown;
+    if (hit) { hit.state = 'stunned'; hit.t = R.arrow_stun; hit.push = 0; hit.targetId = null; }
+    emit('arrow', { hit_id: hit ? hit.id : null, dir_deg: Math.round((th * 180) / Math.PI) });
   }
 
   // 8. move shades and drifters
@@ -477,8 +494,8 @@ export function step(g, input) {
     d.pos[1] = glideY(g, d.pos[0], d.pos[2], R.drifter_y);
   }
 
-  // 9. contact: drifters steal first, then shades hit (by id order)
-  if (p.wait === 0) {
+  // 9. contact: drifters steal first, then shades hit (by id order); no damage in the bench scene
+  if (p.wait === 0 && !g.bench) {
     for (const d of g.drifters) {
       if (d.state === 'chase' && !d.stoleOnce && p.carried > 0 && distXZ(d.pos, p.pos) <= R.drifter_touch) {
         const amount = Math.min(R.drifter_steal, p.carried);
@@ -512,7 +529,8 @@ export function step(g, input) {
     }
   }
 
-  // 10. spawns (new things interact from the next tick)
+  // 10. spawns (new things interact from the next tick); none in the bench scene
+  if (g.bench) { g.tick = stamp; return events; }
   if (g.randomMotes && g.simTick % R.mote_spawn_every === 0 && g.motes.length < R.mote_cap) {
     const free = map.motePoints.filter((q) => !g.motes.some((m) => m.kind === 'random' && distXZ(m.pos, q) < 1e-6 && Math.abs(m.pos[1] - q[1]) < 1e-6));
     if (free.length) g.motes.push({ id: `M${g.nextMote++}`, pos: [...free[Math.floor(g.rng() * free.length)]], kind: 'random', ttl: null });
@@ -575,7 +593,10 @@ function movePlayer(g, input, edge, emit) {
   }
 
   let hx, hz;
-  const speed = p.charm > 0 ? R.charm_speed : T.player_speed;
+  // creative mode only: innate sprint after 1.5 s of continuous running (x1.25)
+  p.runTicks = wl > 1e-9 ? p.runTicks + 1 : 0;
+  const sprint = g.creative && p.charm === 0 && p.runTicks >= R.sprint_after ? R.sprint_mult : 1;
+  const speed = (p.charm > 0 ? R.charm_speed : T.player_speed) * sprint;
   if (p.dash > 0) { hx = p.dashDir[0] * T.dash_speed; hz = p.dashDir[1] * T.dash_speed; }
   else if (p.launch) { [hx, hz] = p.launch; }
   else { hx = wx * speed; hz = wz * speed; }
@@ -681,4 +702,28 @@ export function snapshot(g) {
     motes_active: g.motes.length,
     motes: g.motes.map((m) => ({ id: m.id, pos: v3(m.pos), kind: m.kind, ttl_s: m.ttl === null ? null : sec(m.ttl) })),
   };
+}
+
+// v1.3 benchmark scene (Ticket-04 §1): night 1, 200 wander shades spread evenly over the island,
+// 100 motes, L1-L3 lit with fuel 100. Spawns, damage, pickup, fuel burn and night end are off.
+export function createBenchGame(seed = 42) {
+  const g = createGame(seed, {
+    random_motes: false, random_shades: false, random_drifters: false, wind_enabled: false,
+    motes: [], shades: [], lanterns: ['L1', 'L2', 'L3'].map((id) => ({ id, lit: true, fuel: 100 })),
+  }, 1);
+  g.bench = true;
+  const disc = () => {
+    const r = 39 * Math.sqrt(g.rng());
+    const a = g.rng() * Math.PI * 2;
+    return [r * Math.cos(a), r * Math.sin(a)];
+  };
+  for (let i = 0; i < R.bench_shades; i++) {
+    const [x, z] = disc();
+    g.shades.push({ id: nextShadeId(g), pos: [x, R.shade_y, z], state: 'wander', t: 0, push: 0, pushDir: [1, 0], recoilDir: [1, 0], evict: 0, evictFrom: null, targetId: null, drainTicks: 0 });
+  }
+  for (let i = 0; i < R.bench_motes; i++) {
+    const [x, z] = disc();
+    g.motes.push({ id: `M${g.nextMote++}`, pos: [x, 0, z], kind: 'random', ttl: null });
+  }
+  return g;
 }
