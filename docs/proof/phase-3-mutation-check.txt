@@ -1,0 +1,9 @@
+Mutation check, Phase 3 rules — 2026-11-20 (break one rule, test must go red, revert)
+
+M3 safe zone at exactly 30: "fuel >= 30" -> "fuel > 30"
+   first try: NOT caught (F4 never hit the exact 30.0 boundary).
+   fix: added F4b (fuel 1801/60 -> 30.0 after the burn: zone must be active).
+   second try -> ✖ F4b boundary: fuel exactly 30.0 after the burn still has a safe zone; 29.98 does not (0.8695ms);
+M4 drain does not stack: 5 x drainers -> 5 x min(1, drainers)
+   -> ✖ F5 (fuel drop over 60 ticks must be 60 x (1 + 5 x 2))
+After revert:  pass 56

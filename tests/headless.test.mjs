@@ -31,8 +31,10 @@ test('R12 snapshot at tick 0 and every N ticks, end line last', () => {
   assert.deepEqual(r.lines.at(-1), { type: 'end', ticks: 25, state: 'playing', score: 0 });
   const s0 = r.lines[0];
   // v1.1 player fields (Phase 1 checked only pos/flames/carried)
-  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: 3, carried: 0, invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0 });
-  assert.equal(s0.time_left_s, 300);
+  // v1.2 adds player.capacity; night 1 is 240 s (was 300)
+  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: 3, carried: 0, capacity: 10, invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0 });
+  assert.equal(s0.time_left_s, 240);
+  assert.deepEqual(s0.lanterns[0], { id: 'L1', pos: [0, 0, 25], lit: false, deposited: 0, fuel: 0, ever_lit: false, relit_count: 0 });
   assert.equal(s0.night, 1);
   assert.deepEqual(s0.wind, { active: false, dir_deg: null });
   for (const k of ['motes', 'drifters', 'charms', 'shades', 'lanterns']) assert.ok(Array.isArray(s0[k]), k);
@@ -51,15 +53,16 @@ test('R12b example inputs file: walk to a mote, event stamped k+1, held fields p
   assert.equal(last.player.pos[2], 6);
 });
 
-test('R6 scripted full win scenario ends early with state won', () => {
+// REPLACED by Ticket-03: no early win any more; the scripted run now ends at dawn (time_left_s 5).
+test('R6 (v1.2) scripted run: all 5 lit, night ends at dawn with dawn_survived', () => {
   const r = headless(['--seed', '1', '--night', '1', '--scenario', path.join(SCN, 'win_one_left.json'),
     '--inputs', path.join(SCN, 'interact_once.json'), '--ticks', '600']);
   assert.equal(r.code, 0, r.stderr);
   const end = r.lines.at(-1);
   assert.equal(end.state, 'won');
-  assert.ok(end.ticks < 600);
+  assert.equal(end.ticks, 300); // time_left_s 5 -> dawn at 5 x 60 = 300 ticks
   assert.equal(r.lines.at(-2).type === 'snapshot' || r.lines.at(-2).name === 'game_over', true);
-  assert.ok(r.lines.some((l) => l.name === 'game_over' && l.data.reason === 'all_lit'));
+  assert.ok(r.lines.some((l) => l.name === 'game_over' && l.data.reason === 'dawn_survived'));
 });
 
 test('R13 same seed + scenario + inputs -> byte-identical output', () => {

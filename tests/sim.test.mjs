@@ -82,14 +82,17 @@ test('R5c lantern remembers progress; ties go to the smaller id', () => {
   assert.equal(g.lanterns[0].deposited, 7);
 });
 
-test('R6 lighting the last lantern wins with 2 x seconds left + 50 x flames', () => {
+// R6 REPLACED by Ticket-03 (v1.2): lighting every lantern no longer ends the night (no early win,
+// 'all_lit' reason removed). New rule: win at dawn with >= ceil(0.6 x lanterns) lit -> 'dawn_survived'.
+test('R6 (v1.2) lighting the last lantern does NOT end the night; dawn with enough lit wins', () => {
   const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
-  const g = createGame(1, quiet({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 1] }, ...lit], time_left_s: 100 }));
+  const g = createGame(1, quiet({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 1] }, ...lit], time_left_s: 2 }));
   const ev = step(g, { ...IDLE, interact: true });
-  assert.equal(g.state, 'won');
-  assert.deepEqual(ev.at(-1).data, { result: 'won', reason: 'all_lit' });
-  const bonus = T.score.per_second_left * Math.floor(100 - 1 / 60) + T.score.per_flame_left * T.flames;
-  assert.equal(g.score, T.score.per_mote * T.lantern_cost + T.score.per_lantern + bonus);
+  assert.ok(ev.some((e) => e.name === 'lantern_lit'));
+  assert.equal(g.state, 'playing', 'no early win');
+  const ev2 = run(g, 200);
+  assert.equal(g.tick, 120); // time_left_s 2 -> dawn at 2 x 60 = 120 ticks
+  assert.deepEqual(ev2.at(-1).data, { result: 'won', reason: 'dawn_survived' });
 });
 
 test('R7 shade contact: -1 flame, drop floor(n/2) into a 1.5-2.5 m ring, invulnerable 90 ticks', () => {

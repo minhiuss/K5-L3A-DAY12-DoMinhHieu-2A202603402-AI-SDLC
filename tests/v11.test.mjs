@@ -213,11 +213,13 @@ test('P10 night 3: cliffs block, 30° ramp climbs to tier 1, pad (0,3,13) lands 
   assert.ok(near(Math.hypot(wind.player.pos[0] - x0, wind.player.pos[2] - z0), R.wind_speed, 1e-6));
 });
 
-test('P11 win is checked after the tick: all lit on the very last tick still wins', () => {
-  const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
+// P11 REPLACED by Ticket-03: the win check still runs after the whole tick, but now it is the
+// dawn rule. Lighting the 3rd of 5 lanterns ON the dawn tick counts (lit at the last tick >= 3).
+test('P11 (v1.2) win is checked after the tick: reaching 3/5 lit on the dawn tick wins', () => {
+  const lit = ['L2', 'L3'].map((id) => ({ id, lit: true }));
   const g = createGame(1, quiet({ player: { carried: 10 }, lanterns: [{ id: 'L1', pos: [0, 0, 1] }, ...lit], time_left_s: 1 / 60 }));
   const ev = step(g, { ...IDLE, interact: true });
-  assert.deepEqual(ev.at(-1).data, { result: 'won', reason: 'all_lit' });
+  assert.deepEqual(ev.at(-1).data, { result: 'won', reason: 'dawn_survived' });
 });
 
 test('P12 nights 2 and 3 load their standard lanterns and spawn points', () => {
@@ -227,6 +229,6 @@ test('P12 nights 2 and 3 load their standard lanterns and spawn points', () => {
   assert.deepEqual(n3.lanterns.map((l) => l.pos), [[0, 6, 6], [18, 3, 10], [-18, 3, 10], [35, 0, -10], [-35, 0, -10], [20, 0, -35], [-20, 0, -35]]);
   assert.equal(n2.motes.length, 20);
   assert.equal(n3.charms.length, 2);
-  assert.equal(n2.time_left_s, 330);
-  assert.equal(n3.time_left_s, 360);
+  assert.equal(n2.time_left_s, 270); // v1.2 durations (was 330 / 360)
+  assert.equal(n3.time_left_s, 300);
 });
