@@ -4,9 +4,9 @@ import { makeRng } from '../sim.js';
 
 export function buildSky(scene, glowTex) {
   const uniforms = {
-    top: { value: new THREE.Color(0x070414) },
-    mid: { value: new THREE.Color(0x1c0f3a) },
-    horizon: { value: new THREE.Color(0x4a2350) },
+    top: { value: new THREE.Color(0x0e1430) }, // PAL.sky
+    mid: { value: new THREE.Color(0x151c42) },
+    horizon: { value: new THREE.Color(0x1b2350) }, // PAL.fog
     warm: { value: 0 },
   };
   const dome = new THREE.Mesh(
