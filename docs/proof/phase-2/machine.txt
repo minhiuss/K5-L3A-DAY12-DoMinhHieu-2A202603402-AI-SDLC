@@ -1,0 +1,4 @@
+os: Windows_NT 10.0.26200 x64
+cpu: AMD Ryzen AI 9 HX 370 w/ Radeon 890M            x24
+node: v26.13.0
+git: 72f8bc7

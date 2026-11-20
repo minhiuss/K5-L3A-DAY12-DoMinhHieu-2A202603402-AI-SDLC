@@ -2,7 +2,7 @@
 
 > **Video demo:** _(thêm ở Phase 4 — link Release `v1.0.0`)_
 
-Game 3D góc nhìn thứ ba (Three.js). Mây, người giữ đèn nhỏ tuổi, gom đom đóm để thắp lại **5 Đèn Lồng Lớn** trên Đảo Bến trước bình minh và né Bóng Mực. Có chế độ **headless** theo Test Contract v1.0 để chấm tự động.
+Game 3D góc nhìn thứ ba (Three.js). Mây, người giữ đèn nhỏ tuổi, đi qua **3 Đêm** (Đảo Bến, Đảo Cau, Đảo Chuông), gom đom đóm để thắp lại các Đèn Lồng Lớn trước bình minh, né Bóng Mực và Gió Lạc. Có chế độ **headless** theo **Test Contract v1.1** để chấm tự động.
 
 Lab: Day 12 AI SDLC (tài liệu gốc của lab ở [`docs/lab/`](docs/lab/README.md)).
 
@@ -23,45 +23,52 @@ Bản build tĩnh: `npm run build` → thư mục `dist/` (mở bằng `npm run 
 | W A S D | Đi (theo hướng camera) |
 | Kéo chuột / ← → | Xoay camera |
 | Space | Nhảy |
-| E | Đổ đom đóm đang mang vào đèn chưa thắp gần nhất |
-| F | Pulse ánh sáng: làm choáng + đẩy Bóng Mực, tốn 1 đom đóm |
-| R | Chơi lại · Enter: bắt đầu |
+| Shift | Lướt (14 m/s trong 0.2 s, hồi 1.5 s) |
+| E | Nạp ánh sáng vào đèn chưa sáng gần nhất (trong 2 m) |
+| F | Tỏa Sáng: tốn 3 đom đóm, choáng + đẩy Bóng Mực trong 5 m, hồi 3 s |
+| Esc / P | Tạm dừng (Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu) |
+| Enter | Nút chính trên các màn hình |
 | Lăn chuột | Zoom camera |
 | `` ` `` hoặc F3 | Bật/tắt đồng hồ FPS |
 
-Tuỳ chọn URL: `?seed=N` (cố định thế giới) · `?q=low` (tắt bloom, cho máy yếu) · `?bench=1` (camera bay vòng 10 s và đo khung hình). Kết quả đo: [`docs/proof/visual.md`](docs/proof/visual.md).
+Tuỳ chọn URL: `?night=1|2|3` (vào thẳng Đêm đó) · `?seed=N` (cố định thế giới) · `?q=low` (tắt bloom, cho máy yếu) · `?bench=1` (camera bay vòng 10 s và đo khung hình). Kết quả đo: [`docs/proof/visual.md`](docs/proof/visual.md).
 
-## Luật chơi và điểm
+## Luật chơi và điểm (số chuẩn Ticket-02)
 
-- Đom đóm tự nhặt khi đứng gần (≤ 1 m), mang tối đa 5. Mỗi đèn cần 4 đom đóm.
-- Bóng Mực xuất hiện từ mép đảo (5 s đầu, sau đó mỗi 20 s, tối đa 4) và đuổi Mây. Chạm: mất 1 lửa, rơi một nửa số đom đóm (làm tròn xuống), bất tử 2 s. Bóng không vào được vòng 5 m quanh đèn.
-- Thắng: thắp cả 5 đèn. Thua: hết 3 lửa, hoặc hết 300 s (bình minh).
+- Đom đóm tự nhặt khi cách ≤ 1 m (chênh cao ≤ 1.5 m), mang tối đa 10. Mỗi đèn cần 10, nạp nhiều lần được.
+- Bóng Mực xuất hiện từ giây 5 (2 con), sau đó định kỳ; đuổi khi cách ≤ 12 m. Chạm: −1 Ngọn Lửa, rơi một nửa đom đóm ra quanh Mây (nhặt lại trong 8 s), bất tử 1.5 s. Đèn đã sáng tạo vùng an toàn 6 m.
+- Rơi khỏi đảo: −1 Ngọn Lửa, mất hết đom đóm, hồi sinh ở điểm xuất phát.
+- Đêm 2–3: **Gió Lạc** cướp 3 đom đóm khi Mây mang ≥ 5. **Bùa Gió** cho chạy 7.2 m/s và lướt không hồi chiêu trong 10 s. Đêm 3 có **gió mạnh** mỗi 30 s.
+- Thắng một Đêm: thắp hết đèn. Thua: hết 3 Ngọn Lửa, hoặc trời sáng (300 / 330 / 360 s).
 
 | Điểm | |
 |---|---|
-| Mỗi đom đóm nhặt | +10 |
+| Mỗi đom đóm nạp vào đèn | +10 |
 | Mỗi đèn thắp | +100 |
-| Mỗi Bóng Mực bị pulse trúng | +25 |
-| Khi thắng: mỗi giây còn lại | +1 |
-| Khi thắng: mỗi lửa còn lại | +50 |
+| Mỗi Bóng Mực trúng Tỏa Sáng | +5 |
+| Khi thắng Đêm: mỗi giây còn lại | +2 |
+| Khi thắng Đêm: mỗi Ngọn Lửa còn lại | +50 |
 
-## Headless (Test Contract v1.0)
+Tổng điểm game là tổng điểm các Đêm đã thắng.
+
+## Headless (Test Contract v1.1)
 
 ```bash
 node headless.mjs --seed 1 --night 1 --ticks 600 --out out.jsonl \
+  [--night 1|2|3] \
   [--scenario scenarios/pickup.json] [--inputs scenarios/walk_forward.json] [--snapshot-every 10]
 ```
 
 - 60 tick/s cố định, không cần cửa sổ/GPU. Exit 0 khi chạy xong; file inputs/scenario sai → exit **2** (stderr); sai dòng lệnh → exit 1.
 - Khai báo: [`game.contract.json`](game.contract.json). Số `tuning` lấy từ [`src/tuning.js`](src/tuning.js), test bắt buộc hai chỗ khớp nhau.
-- `fall_enabled: false`: đảo có mép chặn, không có rơi, nên không bao giờ có `player_hit` với `by: "fall"`. Mọi khái niệm khác trong `tuning` đều có trong game.
-- Snapshot có thêm mảng `motes` (khuyến nghị trong v1.0).
-- Giả định cho chỗ PRD mơ hồ: [`docs/notes/phase-1.md`](docs/notes/phase-1.md).
+- `fall_enabled: true` (v1.1). Mọi khái niệm trong `tuning` đều có trong game.
+- Snapshot v1.1: `night`, `wind`, `player.{vel, grounded, invuln, dash_cd_s, pulse_cd_s, charm_s}`, mảng `motes`, `drifters`, `charms`. Event `night_start` ghi ngay sau snapshot tick 0. Input có `dash`, `pause`.
+- Giả định: [`docs/notes/phase-1.md`](docs/notes/phase-1.md), [`docs/notes/phase-2.md`](docs/notes/phase-2.md) (B1–B21).
 
 ## Kiểm chứng
 
-- `npm test`: 23 test (`tests/`): luật R1–R11, contract R15, headless/tất định/exit code R12–R14.
-- `npm run proof -- 1`: sinh lại bằng chứng vào `docs/proof/phase-1/`. Bảng truy vết: [`docs/proof/phase-1.md`](docs/proof/phase-1.md).
+- `npm test`: 45 test (`tests/`): luật R1–R11 (số chuẩn), tính năng v1.1 P1–P13, contract R15, headless/tất định/exit code.
+- `npm run proof -- <N>`: sinh lại bằng chứng vào `docs/proof/phase-N/`. Bảng truy vết: [Phase 1](docs/proof/phase-1.md), [Phase 2](docs/proof/phase-2.md), [hình ảnh + FPS](docs/proof/visual.md).
 - CI (GitHub Actions, Ubuntu + macOS): test, build, chạy headless 2 lần rồi so byte.
 
 ## Harness AI

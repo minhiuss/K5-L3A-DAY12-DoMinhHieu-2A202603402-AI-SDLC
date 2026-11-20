@@ -29,3 +29,24 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 - Bài học: số đo phải kèm điều kiện đo (GPU, độ phân giải, cách đo), nếu không sẽ không so sánh được.
 - Token ước tính: ~120k vào, ~30k ra.
 - Ludo/Tripo: đã thêm `.mcp.json` (Ludo, key đọc từ biến môi trường `LUDO_API_KEY`); chưa dùng asset AI nào trong bản này.
+
+## Phase 2 (Ticket-02, contract v1.1)
+
+| Việc | AI làm | Người kiểm |
+|---|---|---|
+| Đọc ticket | Người học dán ticket vào `docs/lab/ticket-02.md`; một phiên Claude khác báo trước bảng màu + bố cục HUD | Đối chiếu |
+| Giả định + AC | `docs/notes/phase-2.md`: bảng "luật bị thay → test cũ sửa kèm lý do", B1–B21, P1–P14 **trước** khi code | Đọc lại |
+| Sim v1.1 | Viết lại `src/sim.js` theo đúng 12 bước tick, thêm `src/maps.js` | 45 test + mutation check |
+| View | `world.js` (3 bản đồ), bảng màu chuẩn, HUD, menu, pause, cài đặt, Web Audio | Ảnh + `__advance` + `__benchSync` ở 1280×720 |
+
+### Lỗi của AI và cách phát hiện
+
+1. **Đếm sai tick trong test 3 lần** (P1 lướt lại được ở tick 91 chứ không phải 90; P7 bùa ở tick 2701; ghi chú trong test sai một tick). Phát hiện: test đỏ, rồi **tính lại bằng tay trước khi sửa**, để biết là test sai chứ không phải code sai. Đã thêm vào AGENTS.md: ghi phép tính cạnh assert.
+2. **Test cầu tre đỏ** vì Mây nhặt luôn Bùa Gió đặt trên cầu nên chạy nhanh hơn. Phát hiện: đọc vị trí cuối 43.x thay vì 42. Sửa: scenario `charms: []`.
+3. **Test yếu lần 2 (`greentest`):** P6 không bắt được khi bán kính cướp bị phá (1.2 → 6.2). Sửa: kiểm cả tick cướp (42).
+4. **Gió Lạc idle bị Tỏa Sáng làm flee**, sai so với ticket (chỉ `chase` → `flee`). Phát hiện khi đọc lại code với ticket, trước khi chạy test. Sửa ngay.
+5. **Heredoc bash có dấu nháy và backtick làm lệnh hỏng 2 lần.** Sửa: ghi script ra file bằng công cụ Write rồi mới chạy.
+
+### Token / chi phí (ước tính)
+
+- Phase 2: ~250k token vào, ~70k token ra (ticket dài, viết lại sim khoảng 600 dòng, test khoảng 450 dòng, view khoảng 900 dòng). Tiết kiệm: viết giả định + AC trước để code một lần; kiểm trình duyệt bằng `__advance` và ảnh nhỏ thay vì chơi tay qua nhiều ảnh; đo FPS bằng script thay vì quay màn hình.

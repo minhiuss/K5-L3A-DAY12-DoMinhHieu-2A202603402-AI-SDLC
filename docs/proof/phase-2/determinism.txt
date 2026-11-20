@@ -1,0 +1,6 @@
+command: node headless.mjs --seed 7 --night 3 --inputs scenarios/walk_forward.json --ticks 21600 --snapshot-every 1 --out <file>
+run 1 sha256: 1aeea16026170f5c2b191b1ee8bf889804f2b8c8f6c19a3baa67577ffd21569e
+run 2 sha256: 1aeea16026170f5c2b191b1ee8bf889804f2b8c8f6c19a3baa67577ffd21569e
+identical: true
+bytes: 71652705
+wall time run 1 (up to 21600 ticks, snapshot every tick; limit 30 s): 563 ms
