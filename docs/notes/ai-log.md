@@ -80,3 +80,5 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 - **Lỗi nhỏ của AI:** ảnh xem trước clip `shoot` bị lẫn pose của clip trước (xương không có key giữ pose cũ) → reset pose trước mỗi ảnh. Code `run` cũ ngả lưng **ra sau** (dấu `x` sai), clip mới ngả về trước.
 - `may.js`: `AnimationMixer` + `crossFadeTo` theo trạng thái, `shoot` additive, dash = clip co gối + `roller` lộn; không có clip thì dùng procedural. `src/sim.js` không đổi. 62/62 test, build sạch, kiểm trong trình duyệt (run/sprint/jump/dash/shoot).
 - Token ước tính: ~150k vào, ~30k ra.
+- **Kết quả kiểm tay:** người học thấy animation **vẫn chưa ổn**. AI chỉ kiểm bằng số đo xương + ảnh nhỏ, nên chưa đủ; ghi lại để sửa sau.
+- Đồng bộ repo gốc: fork thiếu 3 commit tài liệu (lịch phase, rubric F sáng tạo) → chép vào `docs/lab/`, README thêm "Sáng tạo của tôi".

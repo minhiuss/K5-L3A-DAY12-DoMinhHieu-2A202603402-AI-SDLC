@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] — 2026-11-20 — chỉ phần hiển thị (luật, số liệu, headless: không đổi)
+## [v1.0.1] — 2026-11-20 — chỉ phần hiển thị (luật, số liệu, headless: không đổi)
 
 ### Changed
 - **Mây có clip animation thật** làm trong Blender: `idle`, `run`, `sprint`, `jump`, `dash` (co gối), `shoot` (giương cung). `src/view/may.js` phát bằng `THREE.AnimationMixer`, cross-fade theo trạng thái; `shoot` là clip additive nên chân vẫn chạy khi bắn; không có clip thì dùng lại cách xoay xương bằng code.
@@ -9,6 +9,12 @@
 
 ### Fixed
 - Cây cung trên lưng không còn bị xé khi Mây bước/chạy (gắn cứng vào xương `Spine02` lúc tải).
+
+### Docs
+- Chép 3 commit mới của repo gốc vào `docs/lab/` (lịch Phase 3 = 30 phút, Phase 4 = 90 phút; rubric F có 4 điểm sáng tạo); README thêm mục "Sáng tạo của tôi".
+
+### Known issues
+- Animation của Mây **chưa đạt** (người học kiểm tay): sẽ sửa ở bản sau.
 
 ## [phase-4] / v1.0.0 — 2026-11-20 — Ticket-04 "Bình minh", Test Contract v1.3
 
