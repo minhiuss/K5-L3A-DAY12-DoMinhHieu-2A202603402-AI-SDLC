@@ -1,6 +1,9 @@
 // Mây's rigged model (Tripo, public/assets/may.glb) with a nón lá + hanging lantern added on the
-// Head bone (PRD-0: "conical hat with a small lantern hanging from it"). The file has no animation
-// clips, so walk / idle / jump / barrel roll / bow pose are procedural bone rotations.
+// Head bone (PRD-0: "conical hat with a small lantern hanging from it").
+// Animation: the glb carries Blender clips (idle, run, sprint, jump, dash, shoot — made by
+// art/make_may_clips.py, merged by art/merge_may_anims.mjs). An AnimationMixer cross-fades between them by
+// state; `shoot` is additive so the legs keep running while the arms draw. If the clips are missing, the
+// old procedural bone rotations below are used instead. The dash flip itself is always the `roller` group.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -42,11 +45,16 @@ export async function loadMay(url, shadowTex) {
   const model = gltf.scene;
   model.scale.setScalar(HEIGHT);
   model.traverse((o) => {
-    if (o.isMesh) { o.frustumCulled = false; o.castShadow = false; }
+    if (o.isMesh) {
+      o.frustumCulled = false; o.castShadow = false;
+      // Tripo exports metalness 1: with no environment map a full metal renders near-black,
+      // so Mây showed up as a dark silhouette. Cloth/skin are not metal.
+      for (const mt of [].concat(o.material)) { mt.metalness = 0; mt.metalnessMap = null; mt.roughness = 0.85; mt.needsUpdate = true; }
+    }
   });
   const root = new THREE.Group();
   const rig = new THREE.Group(); // yaw (facing)
-  const roller = new THREE.Group(); // barrel roll about the forward (+Z) axis, pivot at the waist
+  const roller = new THREE.Group(); // dash flip about the sideways (X) axis, pivot at the waist
   roller.position.y = 0.85;
   const orient = new THREE.Group(); // the Tripo model faces +X: turn it to face +Z
   orient.rotation.y = -Math.PI / 2;
@@ -59,6 +67,35 @@ export async function loadMay(url, shadowTex) {
 
   const bones = {};
   model.traverse((o) => { if (o.isBone) bones[o.name] = o; });
+  // The bow slung on her back (material tripo_part_2) was auto-weighted by Tripo to the thighs, calves and
+  // left forearm, so any leg/arm motion tore it apart. Bind every bow vertex fully to Spine02 instead.
+  model.traverse((o) => {
+    if (!o.isSkinnedMesh || ![].concat(o.material).some((m) => m.name === 'Material_tripo_part_2')) return;
+    const j = o.skeleton.bones.indexOf(bones.Spine02);
+    if (j < 0) return;
+    const { skinIndex, skinWeight } = o.geometry.attributes;
+    for (let i = 0; i < skinIndex.count; i++) { skinIndex.setXYZW(i, j, 0, 0, 0); skinWeight.setXYZW(i, 1, 0, 0, 0); }
+    skinIndex.needsUpdate = skinWeight.needsUpdate = true;
+  });
+
+  // Blender clips -> AnimationMixer (null = no clips in the file: use the procedural poses)
+  const mixer = gltf.animations.length ? new THREE.AnimationMixer(model) : null;
+  const actions = {};
+  for (const clip of gltf.animations) {
+    if (clip.name === 'shoot') THREE.AnimationUtils.makeClipAdditive(clip); // delta from frame 0 (rest) on top of the legs
+    const a = mixer.clipAction(clip);
+    if (clip.name === 'dash' || clip.name === 'shoot') { a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = clip.name === 'dash'; }
+    actions[clip.name] = a;
+  }
+  let state = null;
+  function fadeTo(name, dur) {
+    const next = actions[name];
+    if (!next) return;
+    next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();
+    if (state && actions[state]) actions[state].crossFadeTo(next, dur, false); // old fades out, new fades in
+    state = name;
+  }
+  if (mixer) fadeTo('idle', 0);
   // remember rest pose + each bone's parent orientation in rig space, so we can rotate about rig axes
   const rigInv = new THREE.Quaternion();
   const rest = {};
@@ -120,12 +157,28 @@ export async function loadMay(url, shadowTex) {
   let rollT = 0, shootT = 0;
   return {
     root, rig, lamp, rest: () => { for (const [n, b] of Object.entries(bones)) b.quaternion.copy(rest[n].q); }, lampGroup, lampLight: light, shadow, bones, model, triangles: countTris(model),
-    roll() { rollT = 0.2; },          // dash = barrel roll over the 0.2 s dash
-    shoot() { shootT = 0.35; },
+    mixer, clips: Object.keys(actions), get clip() { return state; },
+    roll() { rollT = 0.2; },          // dash = forward flip over the 0.2 s dash
+    shoot() { shootT = 0.35; if (actions.shoot) actions.shoot.reset().play(); },
     // walk: 0..1 speed fraction, grounded, t: seconds, dt: frame time
     animate(t, dt, { walk, grounded, sprint }) {
       const ph = t * (sprint ? 13 : 10.5);
       const s = Math.sin(ph) * 0.65 * walk;
+      if (mixer) {
+        // pick the clip for this frame's state; a change cross-fades (dash snaps in fast: it only lasts 0.2 s)
+        const want = rollT > 0 && actions.dash ? 'dash' : !grounded ? 'jump' : walk < 0.08 ? 'idle' : sprint ? 'sprint' : 'run';
+        if (want !== state) fadeTo(want, want === 'dash' ? 0.04 : 0.18);
+        if (state === 'run') actions.run.timeScale = 0.55 + 0.5 * walk; // slow jog -> full run
+        mixer.update(dt);
+        shootT = Math.max(0, shootT - dt);
+        rig.position.y = grounded ? Math.abs(Math.sin(ph)) * 0.05 * walk : 0;
+        if (rollT > 0) {
+          rollT = Math.max(0, rollT - dt);
+          roller.rotation.x = (1 - rollT / 0.2) * Math.PI * 2; // the clip tucks the knees, the roller flips
+        } else roller.rotation.x = 0;
+        lampGroup.rotation.z = Math.sin(t * 3) * 0.15 + s * 0.2;
+        return;
+      }
       if (grounded) {
         pose('L_Thigh', 'x', -s);
         pose('R_Thigh', 'x', s);
@@ -145,11 +198,17 @@ export async function loadMay(url, shadowTex) {
       if (shootT > 0) poseMulti('R_Upperarm', [['x', -1.35], ['z', -0.5]]);
       else poseMulti('R_Upperarm', [['x', -s * 0.6]]);
       rig.position.y = grounded ? Math.abs(Math.sin(ph)) * 0.05 * walk : 0;
-      // barrel roll around the forward axis during a dash
+      // dash = forward flip in the dash direction: main.js turns the rig to face p.dashDir, so we spin
+      // about the rig's sideways X axis (+angle moves the head toward +Z = forward), knees tucked
       if (rollT > 0) {
         rollT = Math.max(0, rollT - dt);
-        roller.rotation.z = (1 - rollT / 0.2) * Math.PI * 2;
-      } else roller.rotation.z = 0;
+        const k = 1 - rollT / 0.2;
+        roller.rotation.x = k * Math.PI * 2;
+        const tuck = Math.sin(k * Math.PI);
+        pose('L_Thigh', 'x', -1.4 * tuck); pose('R_Thigh', 'x', -1.4 * tuck);
+        pose('L_Calf', 'x', 1.8 * tuck); pose('R_Calf', 'x', 1.8 * tuck);
+        pose('Spine01', 'x', 0.4 * tuck);
+      } else roller.rotation.x = 0;
       lampGroup.rotation.z = Math.sin(t * 3) * 0.15 + s * 0.2;
     },
   };

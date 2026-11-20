@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased] — 2026-11-20 — chỉ phần hiển thị (luật, số liệu, headless: không đổi)
+
+### Changed
+- **Mây có clip animation thật** làm trong Blender: `idle`, `run`, `sprint`, `jump`, `dash` (co gối), `shoot` (giương cung). `src/view/may.js` phát bằng `THREE.AnimationMixer`, cross-fade theo trạng thái; `shoot` là clip additive nên chân vẫn chạy khi bắn; không có clip thì dùng lại cách xoay xương bằng code.
+- Clip được ghép vào `public/assets/may.glb` bằng `node art/merge_may_anims.mjs` (lưới/vật liệu giữ nguyên byte). Nguồn: `art/make_may_clips.py` (Blender 5.3 headless).
+- Model low-poly (7.3 MB) thay bản 18.7 MB; vật liệu `metalness = 0` (hết "Mây ma"); lướt = lộn về phía trước theo `dashDir`.
+
+### Fixed
+- Cây cung trên lưng không còn bị xé khi Mây bước/chạy (gắn cứng vào xương `Spine02` lúc tải).
+
 ## [phase-4] / v1.0.0 — 2026-11-20 — Ticket-04 "Bình minh", Test Contract v1.3
 
 ### Added

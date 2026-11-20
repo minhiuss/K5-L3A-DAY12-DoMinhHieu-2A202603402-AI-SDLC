@@ -67,3 +67,16 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 - **Bị chặn:** `npx gltfpack` (giảm lưới model) bị quyền chặn → dùng model gốc ~2 triệu tam giác, ghi rủi ro.
 - Bench (máy dev): avg 238.4 fps, p1 114.1, load 3810 ms. Soak: 0 crash.
 - Token ước tính: ~250k vào, ~50k ra.
+
+## Sau phase-4 (2026-11-20): sửa model ma + hướng lướt
+- **Lỗi AI để lọt ở Phase 4:** không kiểm vật liệu Tripo (`metalness: 1`, không env map → Mây gần đen, như bóng ma); Mây procedural dự phòng luôn nằm trong cảnh lúc tải; lướt quay quanh trục tiến (Z) nên lăn ngang.
+- **Sửa:** `metalness = 0` khi tải; procedural chỉ thêm khi tải lỗi; lộn quanh trục X + quay mặt theo `dashDir`. 62/62 test, build sạch.
+- Token ước tính: ~60k vào, ~10k ra.
+
+## Sau phase-4 (2026-11-20): clip animation thật từ Blender
+- **Bị chặn:** Blender MCP nhận kết nối ở cổng 9876 nhưng mọi lệnh đều timeout (kể cả sau khi khởi động lại server) → chạy Blender 5.3 headless (`--background --python art/make_may_clips.py`).
+- **Suýt sai:** định export lại cả model từ Blender (sẽ mã hoá lại lưới meshopt) → đổi sang chỉ xuất armature + action, rồi `art/merge_may_anims.mjs` chép `animations` vào glb gốc (lưới giữ nguyên byte, kiểm tư thế nghỉ 41 xương trước khi ghép).
+- **Phát hiện:** cây cung trên lưng bị Tripo auto-weight vào đùi/cẳng chân/cẳng tay → méo khi bước (cả bản procedural cũ cũng bị). Sửa ở view: gắn cứng vào `Spine02` khi tải.
+- **Lỗi nhỏ của AI:** ảnh xem trước clip `shoot` bị lẫn pose của clip trước (xương không có key giữ pose cũ) → reset pose trước mỗi ảnh. Code `run` cũ ngả lưng **ra sau** (dấu `x` sai), clip mới ngả về trước.
+- `may.js`: `AnimationMixer` + `crossFadeTo` theo trạng thái, `shoot` additive, dash = clip co gối + `roller` lộn; không có clip thì dùng procedural. `src/sim.js` không đổi. 62/62 test, build sạch, kiểm trong trình duyệt (run/sprint/jump/dash/shoot).
+- Token ước tính: ~150k vào, ~30k ra.

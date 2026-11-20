@@ -114,14 +114,18 @@ function adaptProcedural(m) {
     },
   };
 }
+// The procedural Mây is only a fallback: it is never in the scene unless may.glb fails to load
+// (before, it stood in the scene during the load and read as a second, frozen "ghost" Mây).
 let may = adaptProcedural(makeMay(shadowTex));
-scene.add(may.root);
 const mayReady = loadMay('./assets/may.glb', shadowTex).then((m) => {
-  scene.remove(may.root);
   may = m;
   scene.add(may.root);
   return true;
-}).catch((e) => { console.warn('may.glb failed, using the procedural Mây', e); return false; });
+}).catch((e) => {
+  console.warn('may.glb failed, using the procedural Mây', e);
+  scene.add(may.root);
+  return false;
+});
 
 // ---------- night state ----------
 const INTRO = {
@@ -473,7 +477,8 @@ function sync(t, dt) {
   const dx = p.pos[0] - lastPos[0], dz = p.pos[2] - lastPos[2];
   const speed = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
   lastPos = [...p.pos];
-  if (speed > 0.5 && speed < 40) {
+  if (p.dash > 0) facing = Math.atan2(p.dashDir[0], p.dashDir[1]); // face the dash so the flip goes that way
+  else if (speed > 0.5 && speed < 40) {
     const target = Math.atan2(dx, dz);
     facing += Math.atan2(Math.sin(target - facing), Math.cos(target - facing)) * Math.min(1, dt * 12);
   }
