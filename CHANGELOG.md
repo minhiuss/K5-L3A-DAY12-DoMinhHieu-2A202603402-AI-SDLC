@@ -1,5 +1,21 @@
 # Changelog
 
+## [phase-4] / v1.0.0 — 2026-11-20 — Ticket-04 "Bình minh", Test Contract v1.3
+
+### Added
+- **Benchmark** `node scripts/bench.mjs --seed 42 --duration 30 --out bench.json` (Chromium có cửa sổ qua Playwright, 1280×720, vsync tắt; cảnh chuẩn 200 Bóng Mực / 100 đom đóm / L1–L3 sáng; camera bay vòng 15 s).
+- **Soak test** `node --expose-gc soak.mjs --seed 7 --nights 10 --out soak.json`.
+- **Bảng xếp hạng cục bộ** (top 10, tên 3–12 ký tự, có tiếng Việt), lưu `data/leaderboard.json` qua `node serve.mjs`; `node serve.mjs --export-leaderboard out.json`.
+- **Accessibility:** đổi mọi phím (báo trùng, khôi phục mặc định), phụ đề + mũi tên mép màn hình khi Bóng Mực xuất hiện, gió, 10 s cuối, đèn < 30 dầu; giảm chuyển động; chữ ≥ 18 px và chữ lớn ×1.25.
+- **Model Mây** (Tripo, đã rig) + nón lá treo đèn trên xương Head, animation bằng code, lướt = lộn vòng; camera TPS khoá chuột; kỹ năng sáng tạo bắn tên (Q) + chạy nhanh (chỉ cửa sổ, tắt được; [ADR-002](docs/adr/ADR-002-creative-mode-and-may-model.md)).
+- Bóng Mực vẽ bằng InstancedMesh (6 draw call cho mọi số lượng).
+
+### Changed (breaking cho người chạy)
+- `contract_version` 1.2 → **1.3**; thêm `bench_cmd`, `soak_cmd`. `run_cmd` = `node serve.mjs`; `build_cmd` thêm `npx playwright install chromium`.
+- `npm start` = build + `serve.mjs` (thay cho `vite preview`).
+- Luật, số liệu, đầu ra headless v1.0–v1.2: **không đổi**.
+
+
 ## [phase-3] — 2026-11-20 — Ticket-03 "Đèn cạn dầu", Test Contract v1.2
 
 ### ⚠ Breaking changes

@@ -58,3 +58,12 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 - **Lỗi AI:** (1) test F5 đặt bóng cách đèn 4 m nhưng mong nó `drain` ngay (cần ≤ 2 m); (2) F5b quên luật phát hiện 12 m và luật wander → drain khi đèn yếu ở ≤ 2 m; (3) mutation M3 (biên đúng 30) không bị bắt → thêm test F4b; (4) lời nhắc châm dầu dùng ngưỡng 90 thay vì 100, phát hiện khi đối chiếu với công thức `used`.
 - (5) Lệnh bash có backtick bị shell hiểu sai, làm mất chữ trong nhật ký này (lần 3 trong lab); phát hiện khi đọc lại file, sửa bằng Python.
 - Token ước tính: ~120k vào, ~35k ra.
+
+## Phase 4 (Ticket-04, contract v1.3) — làm tối thiểu đủ ticket vì quota thấp
+
+- AI làm: cảnh bench trong sim + `scripts/bench.mjs` (Playwright), `soak.mjs`, bảng xếp hạng (server Node ghi đĩa), accessibility, model Mây (nón lá, animation code), Bóng Mực instancing, README/CHANGELOG/CREDITS/retro.
+- Người học: đưa model Tripo, chọn kỹ năng sáng tạo (Q bắn tên, lướt lộn vòng, chạy nhanh, camera TPS), quyết bỏ video tới playtest.
+- **Lỗi AI:** (1) model quay về +X, tay xoay quá tay (A-pose chứ không phải T-pose), phát hiện bằng ảnh; (2) `--port 0` bị hiểu thành 5173 (0 là falsy); (3) leaderboard rơi về localStorage vì dev server chạy trước khi có `vite.config.js`, phát hiện khi export ra rỗng; (4) assert vô nghĩa trong test B2.
+- **Bị chặn:** `npx gltfpack` (giảm lưới model) bị quyền chặn → dùng model gốc ~2 triệu tam giác, ghi rủi ro.
+- Bench (máy dev): avg 238.4 fps, p1 114.1, load 3810 ms. Soak: 0 crash.
+- Token ước tính: ~250k vào, ~50k ra.

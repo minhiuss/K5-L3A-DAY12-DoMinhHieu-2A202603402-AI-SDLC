@@ -1,12 +1,12 @@
 # AGENTS.md — Đảo Đèn Lồng
 
-3D game (Three.js + Vite), 3 nights, with a headless mode that follows **Test Contract v1.2** (specs: `docs/lab/ticket-0N.md`; design decisions: `docs/adr/`; breaking changes: `CHANGELOG.md`; assumptions in `docs/notes/phase-N.md`).
+3D game (Three.js + Vite), 3 nights, with a headless mode that follows **Test Contract v1.3** (specs: `docs/lab/ticket-0N.md`; design decisions: `docs/adr/`; breaking changes: `CHANGELOG.md`; assumptions in `docs/notes/phase-N.md`).
 
 ## Commands
 - Install: `npm install` · Windowed dev: `npm run dev` · Build: `npm run build`
 - Tests (must be green before you say "done"): `npm test`
 - Headless: `node headless.mjs --seed 1 --night 1|2|3 --ticks 600 --out out.jsonl [--scenario f] [--inputs f]`
-- Evidence for a phase: `npm run proof -- <phase>` (writes `docs/proof/phase-<N>/`)
+- Evidence for a phase: `npm run proof -- <phase>` · Bench: `npm run bench` · Soak: `npm run soak` · Play: `npm start`
 
 ## Layout
 - `src/sim.js` — ALL game rules, in Ticket-02's 12-phase tick order (numbered comments). Pure JS: never import three, DOM or `Date`/`Math.random`.

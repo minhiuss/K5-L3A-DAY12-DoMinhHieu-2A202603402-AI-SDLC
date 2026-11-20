@@ -1,76 +1,75 @@
-# Đảo Đèn Lồng
+# Đảo Đèn Lồng — v1.0.0
 
-> **Video demo:** _(thêm ở Phase 4 — link Release `v1.0.0`)_
+> **Video demo:** _(sẽ đính kèm vào Release `v1.0.0`)_ · **Bản chạy được:** [Release v1.0.0](../../releases/tag/v1.0.0)
 
-Game 3D góc nhìn thứ ba (Three.js). Mây, người giữ đèn nhỏ tuổi, đi qua **3 Đêm** (Đảo Bến, Đảo Cau, Đảo Chuông), gom đom đóm để thắp lại các Đèn Lồng Lớn trước bình minh, né Bóng Mực và Gió Lạc. Có chế độ **headless** theo **Test Contract v1.2** để chấm tự động. **Phase 3:** đèn hao dầu và có thể tắt; thắng khi sống tới bình minh với ≥ 60% đèn đang sáng (xem [CHANGELOG](CHANGELOG.md), [ADR-001](docs/adr/ADR-001-lantern-fuel-and-dawn-win.md)).
+![Mây giữ đèn trên Đảo Bến](docs/media/screenshot.jpg)
 
-Lab: Day 12 AI SDLC (tài liệu gốc của lab ở [`docs/lab/`](docs/lab/README.md)).
+Game 3D góc nhìn thứ ba (Three.js). **Mây**, người giữ đèn nhỏ tuổi đội nón lá treo đèn, đi qua **3 Đêm** (Đảo Bến, Đảo Cau, Đảo Chuông): gom đom đóm, thắp và **châm dầu** cho các Đèn Lồng Lớn, né Bóng Mực hút dầu và Gió Lạc cướp đom đóm, giữ đảo sáng tới bình minh. Có chế độ **headless**, **benchmark** và **soak test** theo **Test Contract v1.3** để chấm tự động.
 
-## Cài và chạy (macOS / Linux / Windows, cần Node.js ≥ 18)
+Lab: Day 12 AI SDLC (tài liệu lab ở [`docs/lab/`](docs/lab/README.md); ticket từng phase ở `docs/lab/ticket-0N.md`).
+
+## Yêu cầu hệ thống
+- macOS, Linux hoặc Windows; **Node.js ≥ 18** (đã thử Node 20 trên CI Ubuntu/macOS và Node 26 trên Windows 11).
+- Trình duyệt có WebGL2 (Chrome, Edge, Firefox, Safari mới). GPU tích hợp là đủ (đo trên AMD Radeon 890M: ~238 fps trong cảnh bench).
+- RAM 4 GB+. Khoảng 200 MB đĩa (thêm ~150 MB nếu cài Chromium cho bench).
+
+## Cài và chơi (2 lệnh)
 
 ```bash
-npm install          # cài three + vite
-npm run dev          # mở game trong trình duyệt (http://localhost:5173)
-npm test             # chạy toàn bộ test (luật + contract + headless)
+npm install       # cài three, vite, playwright
+npm start         # build ra dist/ rồi mở game ở http://localhost:5173 (kèm bảng xếp hạng lưu trên đĩa)
 ```
 
-Bản build tĩnh: `npm run build` → thư mục `dist/` (mở bằng `npm run start`, không double-click `index.html`).
+Bản phát hành (không cần `npm install`): tải `dao-den-long-v1.0.0-web.zip` ở Release, giải nén, chạy `node serve.mjs`.
 
-## Điều khiển
+## Điều khiển (đổi được trong Cài đặt)
 
-| Phím | Việc |
+| Phím mặc định | Việc |
 |---|---|
 | W A S D | Đi (theo hướng camera) |
-| Kéo chuột / ← → | Xoay camera |
+| Chuột | Xoay camera (bấm vào màn chơi để khoá chuột; Esc để nhả = tạm dừng) |
 | Space | Nhảy |
-| Shift | Lướt (14 m/s trong 0.2 s, hồi 1.5 s) |
-| E | Nạp ánh sáng vào đèn chưa sáng gần nhất (trong 2 m) |
+| Shift trái | Lướt (14 m/s, 0.2 s, hồi 1.5 s), Mây lộn một vòng |
+| E | Nạp ánh sáng / châm dầu cho đèn gần nhất (trong 2 m) |
 | F | Tỏa Sáng: tốn 3 đom đóm, choáng + đẩy Bóng Mực trong 5 m, hồi 3 s |
-| Esc / P | Tạm dừng (Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu) |
-| Enter | Nút chính trên các màn hình |
-| Lăn chuột | Zoom camera |
-| `` ` `` hoặc F3 | Bật/tắt đồng hồ FPS |
+| Q | Bắn tên *(kỹ năng sáng tạo)*: làm Bóng Mực đầu tiên trên đường bắn choáng 1 s, hồi 1 s |
+| P / Esc | Tạm dừng (Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu) |
+| Lăn chuột | Zoom camera · `` ` `` hoặc F3: đồng hồ FPS |
 
-Tuỳ chọn URL: `?night=1|2|3` (vào thẳng Đêm đó) · `?seed=N` (cố định thế giới) · `?q=low` (tắt bloom, cho máy yếu) · `?bench=1` (camera bay vòng 10 s và đo khung hình). Kết quả đo: [`docs/proof/visual.md`](docs/proof/visual.md).
+**Kỹ năng sáng tạo** (bắn tên, chạy nhanh bẩm sinh sau 1.5 s chạy liên tục) là phần thêm của người học: chỉ có trong cửa sổ game và tắt được trong Cài đặt. Headless, bench và soak **không bao giờ** dùng chúng ([ADR-002](docs/adr/ADR-002-creative-mode-and-may-model.md)).
 
-## Luật chơi và điểm (Ticket-02; phần đèn, thắng và điểm đã thay bởi Ticket-03, xem CHANGELOG)
+**Cài đặt** (được lưu): âm lượng, độ nhạy chuột, đổi phím (báo trùng, khôi phục mặc định), bảng màu dễ phân biệt, giảm chuyển động (tắt rung + chớp), chữ lớn ×1.25, bật/tắt kỹ năng sáng tạo.
 
-- Đom đóm tự nhặt khi cách ≤ 1 m (chênh cao ≤ 1.5 m), mang tối đa 10. Mỗi đèn cần 10, nạp nhiều lần được.
-- Bóng Mực xuất hiện từ giây 5 (2 con), sau đó định kỳ; đuổi khi cách ≤ 12 m. Chạm: −1 Ngọn Lửa, rơi một nửa đom đóm ra quanh Mây (nhặt lại trong 8 s), bất tử 1.5 s. Đèn đã sáng tạo vùng an toàn 6 m.
-- Rơi khỏi đảo: −1 Ngọn Lửa, mất hết đom đóm, hồi sinh ở điểm xuất phát.
-- Đêm 2–3: **Gió Lạc** cướp 3 đom đóm khi Mây mang ≥ 5. **Bùa Gió** cho chạy 7.2 m/s và lướt không hồi chiêu trong 10 s. Đêm 3 có **gió mạnh** mỗi 30 s.
-- Thắng một Đêm: thắp hết đèn. Thua: hết 3 Ngọn Lửa, hoặc trời sáng (300 / 330 / 360 s).
+## Luật chơi (Ticket-03)
+- Đèn hao 1 dầu/giây; châm bằng đom đóm (1 đom đóm = 10 dầu). Hết dầu thì tắt; thắp lại chỉ cần 5 đom đóm.
+- Đèn dưới 30 dầu mất vùng an toàn; Bóng Mực tới hút dầu (5/giây mỗi con).
+- **Thắng một Đêm:** còn sống lúc bình minh với ít nhất 60% số đèn đang sáng (3/5, 4/6, 5/7). Thời lượng 240 / 270 / 300 s.
+- Sức chứa đom đóm 10 + 2 mỗi lần thắp thành công (tối đa 20).
+- Điểm: +5 mỗi đom đóm nạp/châm, +100 thắp lần đầu, +40 thắp lại, +5 Tỏa Sáng trúng bóng (+15 nếu nó đang hút); khi thắng: +50 + dầu còn lại mỗi đèn sáng, +50 mỗi Ngọn Lửa.
+- Thua hoặc thắng Đêm 3 thì nhập tên để vào **Bảng xếp hạng** (top 10, có ở menu chính).
 
-| Điểm | |
-|---|---|
-| Mỗi đom đóm nạp vào đèn | +10 |
-| Mỗi đèn thắp | +100 |
-| Mỗi Bóng Mực trúng Tỏa Sáng | +5 |
-| Khi thắng Đêm: mỗi giây còn lại | +2 |
-| Khi thắng Đêm: mỗi Ngọn Lửa còn lại | +50 |
+Chi tiết và lịch sử thay đổi luật: [CHANGELOG.md](CHANGELOG.md).
 
-Tổng điểm game là tổng điểm các Đêm đã thắng.
-
-## Headless (Test Contract v1.1)
+## Test, headless, bench, soak
 
 ```bash
-node headless.mjs --seed 1 --night 1 --ticks 600 --out out.jsonl \
-  [--night 1|2|3] \
-  [--scenario scenarios/pickup.json] [--inputs scenarios/walk_forward.json] [--snapshot-every 10]
+npm test                                                     # 62 test: luật, contract v1.0–v1.3, headless, bench scene, soak, leaderboard
+node headless.mjs --seed 1 --night 1 --ticks 600 --out out.jsonl [--scenario f.json] [--inputs f.json] [--snapshot-every 10]
+npx playwright install chromium                              # một lần, cho bench
+node scripts/bench.mjs --seed 42 --duration 30 --out bench.json
+node --expose-gc soak.mjs --seed 7 --nights 10 --out soak.json
+node serve.mjs --export-leaderboard out.json                 # {"entries": [...]} đúng thứ tự
 ```
 
-- 60 tick/s cố định, không cần cửa sổ/GPU. Exit 0 khi chạy xong; file inputs/scenario sai → exit **2** (stderr); sai dòng lệnh → exit 1.
-- Khai báo: [`game.contract.json`](game.contract.json). Số `tuning` lấy từ [`src/tuning.js`](src/tuning.js), test bắt buộc hai chỗ khớp nhau.
-- `fall_enabled: true` (v1.1). Mọi khái niệm trong `tuning` đều có trong game.
-- Snapshot v1.1: `night`, `wind`, `player.{vel, grounded, invuln, dash_cd_s, pulse_cd_s, charm_s}`, mảng `motes`, `drifters`, `charms`. Event `night_start` ghi ngay sau snapshot tick 0. Input có `dash`, `pause`.
-- Giả định: [`docs/notes/phase-1.md`](docs/notes/phase-1.md), [`docs/notes/phase-2.md`](docs/notes/phase-2.md) (B1–B21).
+- Khai báo cho máy chấm: [`game.contract.json`](game.contract.json) (`build_cmd`, `run_cmd`, `headless_cmd`, `bench_cmd`, `soak_cmd`, `tuning`).
+- **Headless:** 60 tick/s, không cần GPU; file sai → exit 2; tất định từng byte. Một Đêm 21.600 tick chạy < 1 s.
+- **Bench:** mở Chromium có cửa sổ (Playwright), viewport 1280×720, **vsync tắt** bằng `--disable-gpu-vsync --disable-frame-rate-limit`. Cảnh chuẩn: Đêm 1, 200 Bóng Mực `wander`, 100 đom đóm, L1–L3 sáng; camera bay vòng r = 30 m, Y = 15 m, 15 s/vòng; 3 s khởi động + 30 s đo. Không có Chrome thì thử Chrome/Edge cài sẵn (`DDL_BROWSER_CHANNEL=msedge`). `peak_mem_mb` = RSS cộng dồn của cây tiến trình trình duyệt. Kết quả của mình: [`bench.json`](bench.json).
+- **Soak:** 10 Đêm trong 1 tiến trình, input ngẫu nhiên theo seed. Kết quả: [`soak.json`](soak.json).
+- Bằng chứng từng phase: [Phase 1](docs/proof/phase-1.md) · [Phase 2](docs/proof/phase-2.md) · [Phase 3](docs/proof/phase-3.md) · [Phase 4](docs/proof/phase-4.md) · [hình ảnh/FPS](docs/proof/visual.md).
+- CI (GitHub Actions, Ubuntu + macOS): test, build, headless 2 lần so byte.
 
-## Kiểm chứng
-
-- `npm test`: 45 test (`tests/`): luật R1–R11 (số chuẩn), tính năng v1.1 P1–P13, contract R15, headless/tất định/exit code.
-- `npm run proof -- <N>`: sinh lại bằng chứng vào `docs/proof/phase-N/`. Bảng truy vết: [Phase 1](docs/proof/phase-1.md), [Phase 2](docs/proof/phase-2.md), [hình ảnh + FPS](docs/proof/visual.md).
-- CI (GitHub Actions, Ubuntu + macOS): test, build, chạy headless 2 lần rồi so byte.
+## Tài liệu
+[CHANGELOG](CHANGELOG.md) · [CREDITS](CREDITS.md) · [LICENSE](LICENSE) (MIT) · [ADR-001](docs/adr/ADR-001-lantern-fuel-and-dawn-win.md) · [ADR-002](docs/adr/ADR-002-creative-mode-and-may-model.md) · giả định `docs/notes/phase-N.md` · [nhật ký dùng AI](docs/notes/ai-log.md) · [retro](docs/notes/retro.md)
 
 ## Harness AI
-
-[`AGENTS.md`](AGENTS.md) / [`CLAUDE.md`](CLAUDE.md) · Stop hook chặn kết thúc khi test đỏ ([`.claude/settings.json`](.claude/settings.json) → [`scripts/stop-gate.mjs`](scripts/stop-gate.mjs)) · skill [`verify`](.claude/skills/verify/SKILL.md) · nhật ký AI: [`docs/notes/ai-log.md`](docs/notes/ai-log.md).
+[`AGENTS.md`](AGENTS.md) / [`CLAUDE.md`](CLAUDE.md) · Stop hook chặn kết thúc khi test đỏ ([`.claude/settings.json`](.claude/settings.json) → [`scripts/stop-gate.mjs`](scripts/stop-gate.mjs)) · skill [`verify`](.claude/skills/verify/SKILL.md) · MCP Ludo/Tripo ([`.mcp.json`](.mcp.json), key qua biến môi trường).
