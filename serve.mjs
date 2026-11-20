@@ -30,7 +30,8 @@ if (!fs.existsSync(path.join(DIST, 'index.html'))) {
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.wasm': 'application/wasm' };
 
 const server = http.createServer((req, res) => {
-  const url = new URL(req.url, 'http://localhost');
+  let url;
+  try { url = new URL(req.url, 'http://localhost'); } catch { res.statusCode = 400; return res.end('bad request'); } // e.g. "//" must not crash the server
   if (url.pathname === '/api/leaderboard') return handleApi(LB_FILE, req, res);
   let file = path.normalize(path.join(DIST, decodeURIComponent(url.pathname)));
   if (!file.startsWith(DIST)) { res.statusCode = 403; return res.end(); }
