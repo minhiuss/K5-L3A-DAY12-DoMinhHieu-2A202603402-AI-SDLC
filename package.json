@@ -1,0 +1,22 @@
+{
+  "name": "dao-den-long",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Đảo Đèn Lồng — 3D lantern-keeper game (Three.js) with a headless Test Contract v1.0 mode",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "start": "vite preview --open",
+    "test": "node --test tests/",
+    "headless": "node headless.mjs",
+    "proof": "node scripts/proof.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "vite": "5.4.11"
+  }
+}
