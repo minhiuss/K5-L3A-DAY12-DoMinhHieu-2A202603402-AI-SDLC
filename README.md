@@ -1,6 +1,8 @@
-# Đảo Đèn Lồng — v1.0.0
+# Đảo Đèn Lồng — v1.0.1
 
-> **Video demo:** _(sẽ đính kèm vào Release `v1.0.0`)_ · **Bản chạy được:** [Release v1.0.0](../../releases/tag/v1.0.0)
+> **Video demo (96 s):** [dao-den-long-demo-v1.0.1.mp4](../../releases/download/v1.0.1/dao-den-long-demo-v1.0.1.mp4) · **Bản chạy được:** [Release v1.0.1](../../releases/tag/v1.0.1) · bản nộp đúng giờ lab: [v1.0.0](../../releases/tag/v1.0.0)
+>
+> **Lỗi đã biết (v1.0.1):** animation của Mây còn giật khi chạy (đổi qua lại `idle`/`run`); sẽ sửa ở bản sau. Chi tiết: [CHANGELOG](CHANGELOG.md).
 
 ![Mây giữ đèn trên Đảo Bến](docs/media/screenshot.jpg)
 
@@ -22,7 +24,7 @@ npm start         # build ra dist/ rồi mở game ở http://localhost:5173 (k�
 
 ### Mở game trên web từ bản phát hành (không cần `npm install`)
 
-1. Tải `dao-den-long-v1.0.0-web.zip` ở [Release v1.0.0](../../releases/tag/v1.0.0) rồi giải nén.
+1. Tải `dao-den-long-v1.0.1-web.zip` ở [Release v1.0.1](../../releases/tag/v1.0.1) rồi giải nén.
 2. Mở terminal trong thư mục vừa giải nén, chạy `node serve.mjs` (cần Node.js ≥ 18).
 3. Trình duyệt tự mở `http://localhost:5173`. Nếu không tự mở, dán địa chỉ đó vào Chrome/Edge/Firefox/Safari. Đổi cổng: `node serve.mjs --port 8080`.
 4. Bấm vào màn chơi để khoá chuột. Bảng xếp hạng lưu ở `data/leaderboard.json` cạnh `serve.mjs`.
