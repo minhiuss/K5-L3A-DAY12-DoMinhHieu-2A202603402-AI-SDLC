@@ -6,14 +6,14 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { createGame, step, timeLeft, TICK_HZ } from './sim.js';
+import { createGame, step, timeLeft, capacityOf, TICK_HZ } from './sim.js';
 import { TUNING as T, RULES as R } from './tuning.js';
 import { MAPS } from './maps.js';
 import { PAL } from './view/palette.js';
 import { glowTexture, shadowTexture } from './view/textures.js';
 import { buildSky } from './view/sky.js';
 import { buildWorld } from './view/world.js';
-import { makeMay, makeGreatLantern, makeShade, setShadeLook, makeDrifter, makeCharm } from './view/models.js';
+import { makeMay, makeGreatLantern, makeShade, setShadeLook, setShadeColorblind, makeDrifter, makeCharm } from './view/models.js';
 import { makeMoteLayer, makeAmbientFireflies, makeWindLeaves } from './view/fireflies.js';
 import { makeAudio } from './view/audio.js';
 
@@ -23,11 +23,12 @@ let quality = params.get('q') === 'low' ? 'low' : 'high';
 
 // ---------- settings (saved between sessions) ----------
 const SETTINGS_KEY = 'dao-den-long-settings';
-const settings = { volume: 0.7, sensitivity: 1 };
+const settings = { volume: 0.7, sensitivity: 1, colorblind: false };
 try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch { /* private mode: defaults */ }
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* ignore */ } };
 const audio = makeAudio();
 audio.setVolume(settings.volume);
+const applyColorblind = () => { setShadeColorblind(settings.colorblind); document.body.classList.toggle('cb', settings.colorblind); };
 
 // ---------- renderer + post ----------
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
@@ -182,7 +183,7 @@ function showIntro() {
   mode = 'intro';
   show(`<p class="sub">Đêm ${night}</p><h1>${MAPS[night].name}</h1>
     <p class="quote">“${INTRO[night]}”<br><span class="small">— Ông Đăng</span></p>
-    <p class="small">Thắp ${game.lanterns.length} đèn · ${Math.round(game.startTime)} giây tới bình minh</p>
+    <p class="small">Giữ ít nhất ${Math.ceil(T.win_ratio * game.lanterns.length)}/${game.lanterns.length} đèn sáng tới bình minh (${Math.round(game.startTime)} giây). Đèn hao dầu: bấm E để châm.</p>
     <button data-primary data-act="go">Vào đêm (Enter)</button>`, { '[data-act=go]': beginPlay });
 }
 function beginPlay() { mode = 'play'; hide(); audio.unlock(); }
@@ -202,9 +203,11 @@ function showSettings(back) {
   show(`<h1>Cài đặt</h1>
     <label>Âm lượng <input id="vol" type="range" min="0" max="1" step="0.05" value="${settings.volume}"></label>
     <label>Độ nhạy chuột <input id="sens" type="range" min="0.2" max="2.5" step="0.1" value="${settings.sensitivity}"></label>
+    <label>Bảng màu dễ phân biệt <input id="cb" type="checkbox" ${settings.colorblind ? 'checked' : ''}></label>
     <button data-primary data-act="back">Xong</button>`, { '[data-act=back]': back });
   $('vol').oninput = (e) => { settings.volume = Number(e.target.value); audio.setVolume(settings.volume); saveSettings(); };
   $('sens').oninput = (e) => { settings.sensitivity = Number(e.target.value); saveSettings(); };
+  $('cb').onchange = (e) => { settings.colorblind = e.target.checked; saveSettings(); applyColorblind(); };
 }
 function showResult(won, reason) {
   mode = 'result';
@@ -215,7 +218,7 @@ function showResult(won, reason) {
       <p class="big">${totalScore} điểm</p><button data-primary data-act="menu">Về menu</button>`, { '[data-act=menu]': showMenu });
     return;
   }
-  const why = { all_lit: 'Mọi Đèn Lồng Lớn đã sáng!', dawn: 'Trời đã sáng mà đèn chưa thắp đủ.', no_flames: 'Mây đã hết Ngọn Lửa.' }[reason];
+  const why = { dawn_survived: 'Đảo còn sáng tới bình minh!', dawn: 'Trời sáng mà số đèn còn sáng chưa đủ.', no_flames: 'Mây đã hết Ngọn Lửa.' }[reason];
   if (won) {
     show(`<p class="sub">Đêm ${night} · ${MAPS[night].name}</p><h1>Đảo đã sáng!</h1><p>${why}</p>
       <p class="big">${game.score} điểm</p><p class="small">Tổng: ${totalScore}</p>
@@ -242,15 +245,19 @@ function drawHud() {
   const tl = Math.max(0, timeLeft(game));
   hudTimer.textContent = fmt(Math.ceil(tl - 1e-9));
   hudTimer.classList.toggle('danger', tl <= 30);
-  hudTR.innerHTML = `<div>Đèn <b>${lit}/${game.lanterns.length}</b></div><div class="score">${game.score}</div>${totalScore ? `<div class="small">Tổng ${totalScore + game.score}</div>` : ''}`;
-  hudBag.innerHTML = Array.from({ length: T.carry_capacity }, (_, i) => `<i class="slot${i < p.carried ? ' full' : ''}"></i>`).join('');
+  if (tl <= 30 && settings.colorblind) hudTimer.textContent = `⚠ ${hudTimer.textContent}`;
+  hudTR.innerHTML = `<div>Đèn sáng <b>${lit}/${game.lanterns.length}</b> <span class="small">(cần ${Math.ceil(T.win_ratio * game.lanterns.length)})</span></div><div class="score">${game.score}</div>${totalScore ? `<div class="small">Tổng ${totalScore + game.score}</div>` : ''}`;
+  const cap = capacityOf(p);
+  hudBag.innerHTML = Array.from({ length: cap }, (_, i) => `<i class="slot${i < p.carried ? ' full' : ''}"></i>`).join('') + `<b class="count">${p.carried}/${cap}</b>`;
   const dashF = p.charm > 0 ? 0 : p.dashCd / (T.dash_cooldown_s * TICK_HZ);
   const pulseF = p.pulseCd / (T.pulse_cooldown_s * TICK_HZ);
   hudCd.innerHTML =
     `<div class="cd${p.charm > 0 ? ' charm' : ''}" style="--f:${dashF}"><span>Lướt</span><small>Shift</small></div>` +
     `<div class="cd${p.carried < T.pulse_cost ? ' off' : ''}" style="--f:${pulseF}"><span>Tỏa Sáng</span><small>F · ${T.pulse_cost}</small></div>`;
-  const near = game.lanterns.find((l) => !l.lit && distXZ(p.pos, l.pos) <= T.interact_radius && Math.abs(p.pos[1] - l.pos[1]) <= R.height_tolerance);
-  promptEl.textContent = near ? `E — Nạp ánh sáng (${near.deposited}/${T.lantern_cost})` : '';
+  const nearL = game.lanterns.find((l) => (!l.lit || l.fuel < T.fuel_max * TICK_HZ) && distXZ(p.pos, l.pos) <= T.interact_radius && Math.abs(p.pos[1] - l.pos[1]) <= R.height_tolerance);
+  promptEl.textContent = !nearL ? '' : nearL.lit
+    ? `E — Châm dầu (${Math.floor(nearL.fuel / TICK_HZ)}/${T.fuel_max})`
+    : `E — Nạp ánh sáng (${nearL.deposited}/${nearL.everLit ? T.relight_cost : T.lantern_cost})`;
   windWarn.textContent = game.wind.active ? 'Gió mạnh!' : game.wind.dir !== null ? 'Gió sắp tới…' : '';
   // arrow to the nearest unlit lantern when it is off screen
   let target = null, best = Infinity;
@@ -305,15 +312,22 @@ function sync(t, dt) {
     const m = lanterns.get(l.id);
     const frac = l.deposited / T.lantern_cost;
     const flick = 0.92 + 0.08 * Math.sin(t * 9 + l.pos[0]);
+    const lowBlink = l.lit && l.fuel < T.low_fuel_threshold * TICK_HZ && Math.floor(t) % 2 === 1; // 1 Hz
+    const fuelK = l.lit ? l.fuel / (T.fuel_max * TICK_HZ) : 0;
+    m.fuelBar.visible = l.lit && !lowBlink;
+    m.fuelFill.scale.x = Math.max(0.001, fuelK);
+    m.fuelBar.quaternion.copy(camera.quaternion);
+    m.lampGroup.scale.set(1.25, l.lit ? 1.25 : 1.0, 1.25); // unlit: squashed 20%
+    m.tear.visible = !l.lit;
     m.paper.color.setHex(l.lit ? PAL.lanternLit : PAL.lanternOff);
-    m.paper.emissiveIntensity = l.lit ? 2.6 * flick : frac * 0.6;
+    m.paper.emissiveIntensity = l.lit ? (lowBlink ? 0.6 : 2.6 * flick) : frac * 0.6;
     m.core.material.opacity = l.lit ? 1 : 0;
-    m.light.intensity = l.lit ? 70 * flick : frac * 5;
+    m.light.intensity = l.lit ? (lowBlink ? 15 : 70 * flick * (0.5 + 0.5 * fuelK)) : frac * 5;
     m.halo.material.opacity = l.lit ? 0.75 : frac * 0.2;
     m.poolMat.opacity = l.lit ? 0.3 : 0;
     m.ringMat.opacity = l.lit ? 0.35 + 0.1 * Math.sin(t * 2) : 0;
     m.lampGroup.rotation.z = Math.sin(t * 0.8 + l.pos[2]) * 0.04;
-    m.pips.forEach((pip, i) => { pip.material.emissiveIntensity = i < l.deposited ? 3 : 0; });
+    m.pips.forEach((pip, i) => { pip.visible = i < (l.everLit ? T.relight_cost : T.lantern_cost); pip.material.emissiveIntensity = !l.lit && i < l.deposited ? 3 : 0; });
     if (l.lit) litCount++;
   }
   const k = litCount / game.lanterns.length;
@@ -400,7 +414,8 @@ function onEvents(events) {
     const s = audio.sfx;
     switch (e.name) {
       case 'mote_picked': s.pick(); break;
-      case 'deposit': s.deposit(); break;
+      case 'deposit': case 'refuel': s.deposit(); break;
+      case 'lantern_out': s.shade(); break;
       case 'lantern_lit': s.lit(); break;
       case 'pulse': s.pulse(); pulseAnim = 1; pulseRing.position.set(game.player.pos[0], game.player.pos[1] + 0.1, game.player.pos[2]); break;
       case 'player_hit':
@@ -523,6 +538,7 @@ window.__benchSync = (n = 300, opts = {}) => {
   };
 };
 
+applyColorblind();
 const startAt = Number(params.get('night'));
 if ([1, 2, 3].includes(startAt)) { startNight(startAt); if (BENCH) { mode = 'bench'; hide(); } else beginPlay(); }
 else { startNight(1); showMenu(); }

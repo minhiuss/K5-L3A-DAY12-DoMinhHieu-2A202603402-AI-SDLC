@@ -127,8 +127,22 @@ export function makeGreatLantern(shadowTex, glowTex, safeRadius, lanternCost) {
     p.position.set(Math.cos(a) * 1.3, 0.55, Math.sin(a) * 1.3);
     pips.push(p);
   }
-  root.add(base, post, arm, roof, rope, lamp.group, core, light, halo, ring, pool, ...pips, contactShadow(shadowTex, 1.6));
-  return { root, paper: lamp.paper, core, light, halo, ringMat, poolMat, pips, lampGroup: lamp.group };
+  // v1.2 fuel bar above the lantern (shown while lit; blinks 1 Hz under 30)
+  const fuelBar = new THREE.Group();
+  fuelBar.position.set(0.6, 5.6, 0);
+  const barBg = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, 0.06), new THREE.MeshBasicMaterial({ color: 0x1a1d2e }));
+  const fillGeo = new THREE.BoxGeometry(1.5, 0.12, 0.08);
+  fillGeo.translate(0.75, 0, 0); // grow from the left edge
+  const fuelFill = new THREE.Mesh(fillGeo, new THREE.MeshBasicMaterial({ color: PAL.lanternLit }));
+  fuelFill.position.x = -0.75;
+  fuelBar.add(barBg, fuelFill);
+  // torn paper mark: tells an unlit lantern apart without color
+  const tear = new THREE.Mesh(new THREE.CircleGeometry(0.18, 3), new THREE.MeshBasicMaterial({ color: 0x0a0a10, side: THREE.DoubleSide }));
+  tear.position.set(0, 0.05, 0.51);
+  tear.rotation.z = 0.4;
+  lamp.group.add(tear);
+  root.add(base, post, arm, roof, rope, lamp.group, core, light, halo, ring, pool, fuelBar, ...pips, contactShadow(shadowTex, 1.6));
+  return { root, paper: lamp.paper, core, light, halo, ringMat, poolMat, pips, lampGroup: lamp.group, fuelBar, fuelFill, tear };
 }
 
 // ---------- Bóng Mực ----------
@@ -170,6 +184,14 @@ export function makeShade(shadowTex) {
   }
   const shadow = contactShadow(shadowTex, 1.0);
   return { root, body, core, edge, blobs, eyes, wisps, shadow, trail: [], spawnT: 0 };
+}
+
+// v1.2 color-blind palette: shade outline + eyes #7A3CFF -> #00B3FF
+export function setShadeColorblind(on) {
+  const c = on ? 0x00b3ff : PAL.shadeEdge;
+  edgeMat.color.setHex(c);
+  inkMat.emissive.setHex(c);
+  eyeMat.emissive.setHex(on ? 0x00b3ff : 0xd9c4ff);
 }
 
 export function setShadeLook(s, state) {
