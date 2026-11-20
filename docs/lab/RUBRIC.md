@@ -2,7 +2,7 @@
 
 > Bài **cá nhân**. Thang điểm **100**.
 > Sản phẩm của bạn được chấm bằng cả **bộ kiểm tra tự động của giảng viên** lẫn **bằng chứng bạn cung cấp**.
-> Đồ họa hay độ phức tạp vượt yêu cầu **không** được cộng điểm. Game tốt là game đúng yêu cầu.
+> Đồ họa hay độ phức tạp vượt yêu cầu **không** được cộng điểm. Game tốt là game đúng yêu cầu. **Sáng tạo gọn và đúng** (không phá phần lõi) được tính trong hạng mục F.
 
 ---
 
@@ -15,7 +15,7 @@
 | C. Quy trình SDLC và harness AI | 15 | Xem mục 3 |
 | D. Evaluation và retro | 10 | Xem mục 4 |
 | E. Hiệu năng và ổn định | 10 | Đo trên cùng một máy chấm cho mọi bài |
-| F. Chất lượng sản phẩm | 10 | Đúng yêu cầu và chơi được là chính |
+| F. Chất lượng sản phẩm và sáng tạo | 10 | 6 điểm đúng yêu cầu và chơi được; 4 điểm sáng tạo (xem mục 5) |
 | G. Video demo | 5 | Dưới 5 phút, có phần bằng chứng |
 
 Điểm phân bổ giữa các phase: hạng mục A chia cho 4 phase, các phase sau có trọng số cao hơn vì cần cả kiểm tra lại các phase trước.
@@ -57,7 +57,7 @@
 
 - **A. Test tự động ẩn (30):** kịch bản của giảng viên chạy qua chế độ headless theo Test Contract. Kịch bản không công bố. Test của phase trước vẫn được chạy lại ở phase sau, trừ những test đã bị yêu cầu mới thay thế (bạn sẽ được cho biết rõ trong ticket).
 - **E. Hiệu năng và ổn định (10):** đo bằng lệnh theo tài liệu phase, trên cùng một máy chấm cho mọi bài. Chấm theo ngưỡng của yêu cầu, không so với bài khác.
-- **F. Chất lượng sản phẩm (10):** chơi thử và đối chiếu với yêu cầu. Đúng yêu cầu và chơi được là chính; mỹ thuật, giao diện và âm thanh ở mức đủ. **Không cộng điểm** cho độ phức tạp hay đồ họa vượt yêu cầu.
+- **F. Chất lượng sản phẩm và sáng tạo (10):** 6 điểm cho phần đúng yêu cầu và chơi được; 4 điểm cho sáng tạo. Sáng tạo chỉ được tính khi (1) không phá yêu cầu và Test Contract (thực thể thêm không làm đổi đầu ra headless), (2) có mục "Sáng tạo của tôi" trong README kèm bằng chứng ngắn, (3) gọn và chạy ổn. Ý nhỏ, rõ, chạy đúng hơn nhiều ý dở dang. Với phần đúng yêu cầu: chơi thử và đối chiếu với yêu cầu. Đúng yêu cầu và chơi được là chính; mỹ thuật, giao diện và âm thanh ở mức đủ. **Không cộng điểm** cho độ phức tạp hay đồ họa vượt yêu cầu.
 - **G. Video demo (5):** dưới 5 phút, `.mp4`, mở được khi chưa đăng nhập; có chơi thử và cho thấy bằng chứng game chạy đúng (kiểm tra đạt, và đo hiệu năng nếu có).
 
 ## 6. Trừ điểm và điều kiện

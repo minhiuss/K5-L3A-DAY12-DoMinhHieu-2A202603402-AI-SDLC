@@ -19,17 +19,17 @@ Phase 4   Ticket-04, hoàn thiện và phát hành             -> tag phase-4 + 
 
 ### Lịch 4 giờ
 
-Lab kéo dài **4 giờ**, mỗi phase khoảng **1 giờ**, phát hành đúng mốc giờ:
+Lab kéo dài **4 giờ**, Phase 1 và 2 khoảng **1 giờ**, Phase 3 khoảng **30 phút**, Phase 4 khoảng **1 giờ 30 phút**, phát hành đúng mốc giờ:
 
 ```
 0h   Phase 1 phát hành (gồm chuẩn bị)      tag phase-1 trước 1h
 1h   Phase 2 phát hành                      tag phase-2 trước 2h
-2h   Phase 3 phát hành                      tag phase-3 trước 3h
-3h   Phase 4 phát hành                      tag phase-4, Release v1.0.0, video trước 4h
+2h   Phase 3 phát hành                      tag phase-3 trước 2h30
+2h30 Phase 4 phát hành                      tag phase-4, Release v1.0.0, video trước 4h
 4h   Hết giờ
 ```
 
-Gợi ý chia **60 phút** mỗi phase:
+Gợi ý chia **60 phút** cho một phase (Phase 3 chỉ có 30 phút nên rút gọn tương ứng; Phase 4 có 90 phút nên dư thời gian cho đo đạc và phát hành):
 
 | Việc | Thời gian gợi ý |
 |---|---|

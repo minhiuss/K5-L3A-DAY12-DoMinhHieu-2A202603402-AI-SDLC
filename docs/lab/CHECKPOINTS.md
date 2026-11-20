@@ -12,8 +12,8 @@
 | CP0 Chuẩn bị | 0h (trong giờ Phase 1) | khoảng 10 phút |
 | CP1 Phase 1 | 0h đến 1h | 60 phút (gồm CP0) |
 | CP2 Phase 2 | 1h đến 2h | 60 phút |
-| CP3 Phase 3 | 2h đến 3h | 60 phút |
-| CP4 Phase 4 và phát hành | 3h đến 4h | 60 phút |
+| CP3 Phase 3 | 2h đến 2h30 | 30 phút |
+| CP4 Phase 4 và phát hành | 2h30 đến 4h | 90 phút |
 | CP5 Video và nộp | trong 15 phút cuối của giờ thứ tư | 10 đến 15 phút |
 
 Hết giờ mỗi phase: gắn tag, push, rồi đi tiếp.
@@ -88,7 +88,7 @@ Tự kiểm:
 
 ---
 
-## Checkpoint 3: Phase 3 (Ticket-03), 2h đến 3h
+## Checkpoint 3: Phase 3 (Ticket-03), 2h đến 2h30
 
 **Mục tiêu:** xử lý một thay đổi yêu cầu có thể **thay thế** những luật đã có.
 
@@ -105,7 +105,7 @@ Tự kiểm:
 
 ---
 
-## Checkpoint 4: Phase 4 và phát hành (Ticket-04), 3h đến 4h
+## Checkpoint 4: Phase 4 và phát hành (Ticket-04), 2h30 đến 4h
 
 **Mục tiêu:** đưa sản phẩm đến mức phát hành được, đo được, cài đặt dễ.
 

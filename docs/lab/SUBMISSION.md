@@ -18,13 +18,13 @@ Bạn có thể tạo repo mới với đúng tên này, hoặc đổi tên repo
 
 ## 2. Deadline
 
-Lab kéo dài **4 giờ**, mỗi phase khoảng 1 giờ. Hạn tag tính theo **mốc giờ trong buổi lab**.
+Lab kéo dài **4 giờ**, Phase 1 và 2 khoảng 1 giờ, Phase 3 khoảng 30 phút, Phase 4 khoảng 1 giờ 30 phút. Hạn tag tính theo **mốc giờ trong buổi lab**.
 
 | Mục | Hạn |
 |---|---|
 | Tag `phase-1` | Trước mốc 1h (khi Phase 2 phát hành) |
 | Tag `phase-2` | Trước mốc 2h |
-| Tag `phase-3` | Trước mốc 3h |
+| Tag `phase-3` | Trước mốc 2h30 (khi Phase 4 phát hành) |
 | Tag `phase-4`, Release `v1.0.0`, video | Trước mốc 4h (hết giờ lab) |
 | Nộp link repo lên LMS | Theo thông báo của Coach. Mặc định: **23h59 cùng ngày làm Lab đối với ca sáng và 11h59 trưa ngày hôm sau đối với ca chiều** (ICT / GMT+7) |
 

@@ -13,7 +13,7 @@
 
 ## 2. Deadline
 
-- Lab kéo dài **4 giờ**, mỗi phase khoảng 1 giờ và phát hành đúng mốc giờ (0h, 1h, 2h, 3h, hết giờ lúc 4h).
+- Lab kéo dài **4 giờ**, Phase 1, 2, 3, 4 phát hành đúng mốc giờ (0h, 1h, 2h, 2h30, hết giờ lúc 4h).
 - Hạn tag mỗi phase là mốc giờ phát hành phase kế tiếp. Tag `phase-4`, Release và video hạn là hết giờ lab. Chi tiết ở [SUBMISSION.md](SUBMISSION.md).
 - Thời điểm tính là thời điểm của tag và Release trên GitHub.
 - Hạn nộp link lên LMS: theo thông báo của Coach, mặc định **23h59 cùng ngày làm Lab đối với ca sáng và 11h59 trưa ngày hôm sau đối với ca chiều** (ICT / GMT+7). Sau khi hết giờ lab không commit thêm nội dung sản phẩm.

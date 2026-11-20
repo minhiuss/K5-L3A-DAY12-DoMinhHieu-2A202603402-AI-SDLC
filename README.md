@@ -49,6 +49,13 @@ Lưu ý:
 
 **Cài đặt** (được lưu): âm lượng, độ nhạy chuột, đổi phím (báo trùng, khôi phục mặc định), bảng màu dễ phân biệt, giảm chuyển động (tắt rung + chớp), chữ lớn ×1.25, bật/tắt kỹ năng sáng tạo.
 
+## Sáng tạo của tôi
+- **Bắn tên (Q):** mũi tên làm choáng Bóng Mực đầu tiên trên đường bắn 1 s, hồi 1 s.
+- **Chạy nhanh bẩm sinh:** chạy liên tục 1.5 s thì tăng tốc (Mây chạy clip `sprint`).
+- **Mây là model 3D đã rig** (Tripo), đội nón lá treo đèn và quàng khăn đỏ; có clip Blender (idle/chạy/nhảy/lướt lộn/bắn).
+
+**Không phá phần lõi:** hai kỹ năng chỉ có trong cửa sổ game, tắt được trong Cài đặt; headless, bench và soak không dùng chúng, nên đầu ra headless không đổi (62/62 test, CI so byte 2 lần). Lý do và giới hạn: [ADR-002](docs/adr/ADR-002-creative-mode-and-may-model.md).
+
 ## Luật chơi (Ticket-03)
 - Đèn hao 1 dầu/giây; châm bằng đom đóm (1 đom đóm = 10 dầu). Hết dầu thì tắt; thắp lại chỉ cần 5 đom đóm.
 - Đèn dưới 30 dầu mất vùng an toàn; Bóng Mực tới hút dầu (5/giây mỗi con).

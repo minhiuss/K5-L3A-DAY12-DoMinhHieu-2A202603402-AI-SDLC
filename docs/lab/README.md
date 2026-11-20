@@ -37,14 +37,14 @@ Yêu cầu sẽ được bổ sung và có thể thay đổi giữa các phase, 
 
 ### Lịch 4 giờ
 
-Bài lab kéo dài **4 giờ**. Mỗi phase khoảng **1 giờ** và được phát hành đúng mốc giờ. Phase mới xuất hiện trên lab board khi tới mốc.
+Bài lab kéo dài **4 giờ**. Phase 1 và 2 khoảng **1 giờ**, Phase 3 khoảng **30 phút**, Phase 4 khoảng **1 giờ 30 phút**. Mỗi phase phát hành đúng mốc giờ. Phase mới xuất hiện trên lab board khi tới mốc.
 
 | Mốc | Sự kiện | Hạn tag |
 |---|---|---|
 | 0h | Phát hành **Phase 1** (PRD-0), gồm cả phần chuẩn bị | `phase-1` trước mốc 1h |
 | 1h | Phát hành **Phase 2** | `phase-2` trước mốc 2h |
-| 2h | Phát hành **Phase 3** | `phase-3` trước mốc 3h |
-| 3h | Phát hành **Phase 4** | `phase-4`, Release `v1.0.0` và video trước mốc 4h |
+| 2h | Phát hành **Phase 3** | `phase-3` trước mốc 2h30 |
+| 2h30 | Phát hành **Phase 4** | `phase-4`, Release `v1.0.0` và video trước mốc 4h |
 | 4h | Hết giờ lab, chốt bài | |
 
 Hết giờ mỗi phase thì tag và chuyển sang phase tiếp theo, dù phase chưa hoàn hảo. Chỗ chưa xong ghi trung thực trong bằng chứng.
@@ -63,6 +63,8 @@ Mỗi phase là một vòng nhỏ. Công cụ, thứ tự, định dạng tài l
 6. **Release:** gắn tag.
 
 ## Ba điều cần nhớ
+
+> Bạn được **tự do sáng tạo thêm** quanh phần lõi (nhân vật mới, kẻ địch mới, cơ chế nhỏ, câu chuyện, hiệu ứng, âm thanh…). Sáng tạo gọn và không phá yêu cầu được tính điểm trong hạng mục F của [RUBRIC](RUBRIC.md); ghi mục "Sáng tạo của tôi" trong README của bạn.
 
 - **Game tốt là game đúng yêu cầu của khách hàng**, không phải game phức tạp hay đẹp nhất. Làm đúng và chứng minh được là đúng trước, trau chuốt sau.
 - **Cân nhắc kỹ quota token của bạn.** Đốt nhiều token không làm bài tốt hơn. Ngữ cảnh gọn, kế hoạch rõ, kiểm chứng sớm thường vừa rẻ vừa đúng hơn chạy agent liên tục.
