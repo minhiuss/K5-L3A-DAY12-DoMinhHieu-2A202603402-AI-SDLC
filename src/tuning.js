@@ -9,9 +9,9 @@ export const TUNING = {
   interact_radius: 2,
   pulse_cost: 3,
   pulse_radius: 5,
-  night1_duration_s: 300,
-  night2_duration_s: 330,
-  night3_duration_s: 360,
+  night1_duration_s: 240, // v1.2 (Ticket-03)
+  night2_duration_s: 270,
+  night3_duration_s: 300,
   flames: 3,
   invuln_s: 1.5,
   hit_drop_ratio: 0.5,
@@ -25,11 +25,19 @@ export const TUNING = {
   dash_speed: 14,
   dash_duration_s: 0.2,
   dash_cooldown_s: 1.5,
+  fuel_max: 100,
+  fuel_decay_per_s: 1.0,
+  fuel_per_mote: 10,
+  relight_cost: 5,
+  win_ratio: 0.6,
+  drain_per_s: 5,
+  low_fuel_threshold: 30,
+  capacity_max: 20,
   score: {
-    per_mote: 10,
-    per_lantern: 100,
+    per_mote: 5,          // every mote put into a lantern (light, relight, refuel)
+    per_lantern: 100,     // first light
     per_stun: 5,
-    per_second_left: 2,
+    per_second_left: 0,   // time bonus removed in v1.2
     per_flame_left: 50,
   },
 };
@@ -76,4 +84,13 @@ export const RULES = {
   wind_len: 300,
   wind_warn: 120,
   wind_speed: 2,
+  // Ticket-03 (v1.2) numbers that are not contract tuning keys
+  capacity_base: 10,
+  capacity_per_light: 2,
+  score_relight: 40,
+  score_stun_drain: 15,      // total for hitting a draining shade
+  score_dawn_lantern: 50,    // + floor(fuel), per lit lantern at dawn (win only)
+  drain_reach: 2,            // wander -> drain within 2 m of a weak lantern
+  drain_break: 6,            // drain -> chase if Mây is within 6 m
+  drain_event_every: 60,
 };
