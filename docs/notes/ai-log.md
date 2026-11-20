@@ -21,3 +21,11 @@ Công cụ: Claude Code (model Opus) trong app Claude desktop. Người học: c
 ### Token / chi phí (ước tính)
 
 - Phase 1: khoảng 150k token vào + 40k token ra (đọc tài liệu lab, viết khoảng 900 dòng code + docs, vài vòng chạy test). Tiết kiệm bằng cách: đọc contract một lần rồi ghi vào notes; viết test trước phần hình; kiểm cửa sổ bằng script JS + ảnh nhỏ thay vì nhiều ảnh to.
+
+## Visual + performance pass (giữa phase-1 và phase-2)
+
+- Yêu cầu: "nhìn như bài Reddit FPS làm bằng Claude Code, mọi model là code". AI dựng `src/view/` (models, island, sky, fireflies) + bloom. Sim không đổi (test 23/23).
+- Lỗi/vấp: (1) cỏ ra màu trắng xanh vì `MeshStandardMaterial` phản chiếu ánh trăng → đổi sang Lambert + màu tối hơn, phát hiện bằng ảnh chụp. (2) Benchmark dùng `requestAnimationFrame` không bao giờ xong vì pane trình duyệt bị ẩn (rAF = 0 lần/3 s) → viết `__benchSync` render đồng bộ và chờ GPU bằng `readPixels`. (3) `renderer.info` báo 1 draw call vì tự reset sau mỗi pass hậu kỳ → `autoReset = false`, reset 1 lần/frame.
+- Bài học: số đo phải kèm điều kiện đo (GPU, độ phân giải, cách đo), nếu không sẽ không so sánh được.
+- Token ước tính: ~120k vào, ~30k ra.
+- Ludo/Tripo: đã thêm `.mcp.json` (Ludo, key đọc từ biến môi trường `LUDO_API_KEY`); chưa dùng asset AI nào trong bản này.

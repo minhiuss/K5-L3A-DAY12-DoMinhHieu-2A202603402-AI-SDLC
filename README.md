@@ -26,6 +26,10 @@ Bản build tĩnh: `npm run build` → thư mục `dist/` (mở bằng `npm run 
 | E | Đổ đom đóm đang mang vào đèn chưa thắp gần nhất |
 | F | Pulse ánh sáng: làm choáng + đẩy Bóng Mực, tốn 1 đom đóm |
 | R | Chơi lại · Enter: bắt đầu |
+| Lăn chuột | Zoom camera |
+| `` ` `` hoặc F3 | Bật/tắt đồng hồ FPS |
+
+Tuỳ chọn URL: `?seed=N` (cố định thế giới) · `?q=low` (tắt bloom, cho máy yếu) · `?bench=1` (camera bay vòng 10 s và đo khung hình). Kết quả đo: [`docs/proof/visual.md`](docs/proof/visual.md).
 
 ## Luật chơi và điểm
 
